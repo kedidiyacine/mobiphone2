@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/22-ea" xmlns:fx="http://javafx.com/fxml/1"
+    fx:controller="com.controllers.CommandesController">
+    <!-- Add your commandes-related UI elements here -->
+    <Label text="Commandes Tab Content" />
+</VBox>

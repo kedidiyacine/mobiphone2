@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity"
+    minHeight="-Infinity" minWidth="-Infinity" xmlns:fx="http://javafx.com/fxml/1"
+    xmlns="http://javafx.com/javafx/22-ea" fx:controller="com.controllers.HomeController">
+    <children>
+        <TabPane fx:id="tabPane">
+            <Tab text="Clients" closable="false">
+                <content>
+                    <fx:include source="agent-commercial/clients.fxml" />
+                </content>
+            </Tab>
+            <Tab text="Commandes" closable="false">
+                <content>
+                    <fx:include source="agent-commercial/commandes.fxml" />
+                </content>
+            </Tab>
+            <Tab text="Articles" closable="false">
+                <content>
+                    <fx:include source="agent-commercial/articles.fxml" />
+                </content>
+            </Tab>
+        </TabPane>
+    </children>
+</VBox>
