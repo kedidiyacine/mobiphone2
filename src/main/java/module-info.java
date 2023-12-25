@@ -6,7 +6,7 @@ module com {
     requires com.zaxxer.hikari;
 
     // Exported packages
-    exports com.services.authentification;
+    exports com.services;
     exports com.services.DAOs.session;
     exports com.services.DAOs.compte;
     exports com.services.DAOs.client;
