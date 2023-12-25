@@ -7,7 +7,7 @@ import java.sql.Connection;
 
 import com.controllers.ControllersWithAuth;
 import com.db.DatabaseUtil;
-import com.services.authentification.AuthService;
+import com.services.AuthService;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;

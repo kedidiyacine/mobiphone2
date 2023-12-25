@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 
 import com.MainApp;
-import com.services.authentification.AuthService;
+import com.services.AuthService;
 import com.utils.Constants.KEY;
 
 import javafx.event.ActionEvent;

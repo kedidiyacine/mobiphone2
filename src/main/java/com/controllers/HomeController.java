@@ -4,7 +4,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 import com.models.Session;
-import com.services.authentification.AuthService;
+import com.services.AuthService;
 
 import javafx.fxml.Initializable;
 

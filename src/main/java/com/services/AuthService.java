@@ -1,4 +1,4 @@
-package com.services.authentification;
+package com.services;
 
 import java.sql.Connection;
 import java.util.Collections;
