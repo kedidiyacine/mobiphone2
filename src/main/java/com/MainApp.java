@@ -17,6 +17,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 public class MainApp extends Application {
+    private static String authUI = "auth";
     private static Stage stage;
     private static AuthService auth;
 
@@ -26,7 +27,7 @@ public class MainApp extends Application {
         try {
             Connection connection = DatabaseUtil.getConnection();
             auth = new AuthService(connection);
-            setRoot("auth"); // "auth"
+            setRoot(authUI);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -37,7 +38,7 @@ public class MainApp extends Application {
     }
 
     public static void setRoot(String fxml, String title) throws IOException {
-        stage.setScene(new Scene(loadFXML(fxml), 1024, 960, Color.BLACK));
+        stage.setScene(new Scene(loadFXML(fxml), 1920, 1080, Color.BLACK));
         stage.setTitle(title);
         stage.show();
     }
@@ -46,19 +47,19 @@ public class MainApp extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader(MainApp.class.getResource("/fxml/" + fxml + ".fxml"));
 
         fxmlLoader.setControllerFactory(param -> {
-            Object controller = null;
             try {
-                controller = param.getDeclaredConstructor().newInstance();
+                Object controller = param.getDeclaredConstructor().newInstance();
                 if (controller instanceof ControllersWithAuth) {
                     ((ControllersWithAuth) controller).setAuth(auth);
                 }
+                return controller;
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                     | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                 e.printStackTrace();
+                throw new RuntimeException("Error creating controller", e);
             }
-
-            return controller;
         });
+
         return fxmlLoader.load();
     }
 

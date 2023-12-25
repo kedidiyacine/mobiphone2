@@ -24,6 +24,7 @@ public class Client {
     public Client(Long id, String cin, String nom, String prenom, String adresse_de_livraison, String email,
             LocalDateTime date_creation,
             LocalDateTime date_maj) {
+
         this.id = id;
         this.cin = cin;
         this.nom = nom;

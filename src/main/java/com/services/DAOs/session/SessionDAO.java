@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.models.Session;
 
@@ -118,6 +119,12 @@ public class SessionDAO implements SessionRepertoire {
     public List<Session> trouver_par_page(int page, int items_count) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'trouver_par_page'");
+    }
+
+    @Override
+    public Session modifier(Long id, Map<String, Object> updates) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'modifier'");
     }
 
 }

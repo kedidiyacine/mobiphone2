@@ -1,6 +1,7 @@
 package com.services.DAOs;
 
 import java.util.List;
+import java.util.Map;
 
 public interface CrudRepertoire<T, ID> {
 
@@ -13,6 +14,8 @@ public interface CrudRepertoire<T, ID> {
     void supprimer_par_id(ID id);
 
     List<T> trouver_par_page(int page, int items_count);
+
+    T modifier(ID id, Map<String, Object> updates);
 
     // Additional CRUD methods can be added as needed
 }

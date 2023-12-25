@@ -1,11 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.control.Label?>
 
-
-<VBox xmlns="http://javafx.com/javafx/22-ea" xmlns:fx="http://javafx.com/fxml/1"
-    fx:controller="com.controllers.ClientsController">
-    <!-- Add your client-related UI elements here -->
-    <!-- <Label text="Clients Tab Content" /> -->
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+   fx:controller="com.controllers.ClientsController">
+   <children>
+      <HBox VBox.vgrow="ALWAYS" />
+      <TableView fx:id="tblClients" HBox.hgrow="ALWAYS">
+         <columns>
+            <TableColumn fx:id="colId" prefWidth="200.0" text="Identifiant" />
+            <TableColumn fx:id="colCin" prefWidth="200.0" text="N° carte identité" />
+            <TableColumn fx:id="colNom" prefWidth="200.0" text="Nom" />
+            <TableColumn fx:id="colPrenom" prefWidth="200.0" text="Prenom" />
+            <TableColumn fx:id="colAdresseLivraison" prefWidth="200.0" text="Adresse Livraison" />
+            <TableColumn fx:id="colEmail" prefWidth="200.0" text="Email" />
+            <TableColumn fx:id="colCreation" prefWidth="200.0" text="Creation" />
+            <TableColumn fx:id="colMaj" prefWidth="200.0" text="Mise a Jour" />
+         </columns>
+         <padding>
+            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+         </padding>
+      </TableView>
+   </children>
 </VBox>

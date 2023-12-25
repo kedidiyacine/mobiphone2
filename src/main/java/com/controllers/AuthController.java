@@ -10,7 +10,7 @@ import java.util.ResourceBundle;
 
 import com.MainApp;
 import com.services.authentification.AuthService;
-import com.utils.constants.KEY;
+import com.utils.Constants.KEY;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -53,7 +53,7 @@ public class AuthController implements Initializable, ControllersWithAuth {
                 String path = PATHS.get(ROLES.indexOf(selectedRole));
 
                 // Here we can direct the loggedIn user to the interface specific for his role.
-                MainApp.setRoot(path, path.toUpperCase());
+                MainApp.setRoot(path, com.utils.StringUtils.capitalizeWord(path));
 
             } else {
                 // did not login successfully
