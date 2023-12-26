@@ -12,6 +12,9 @@ public class Client {
     private LocalDateTime date_creation;
     private LocalDateTime date_maj;
 
+    public Client() {
+    }
+
     public Client(Long id, String cin, String nom, String prenom, String adresse_de_livraison, String email) {
         this.id = id;
         this.cin = cin;

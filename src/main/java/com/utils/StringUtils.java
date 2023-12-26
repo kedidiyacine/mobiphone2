@@ -22,4 +22,19 @@ public class StringUtils {
         return sqlBuilder.toString();
     }
 
+    public static String buildChangeMessage(Long clientId, Map<String, Map<String, String>> columnModifications) {
+        StringBuilder messageBuilder = new StringBuilder();
+        messageBuilder.append(String.format("Changed row with id: %d%n", clientId));
+
+        for (Map.Entry<String, Map<String, String>> columnEntry : columnModifications.entrySet()) {
+            String columnName = columnEntry.getKey();
+            String oldCin = columnEntry.getValue().get("old");
+            String newCin = columnEntry.getValue().get("new");
+
+            messageBuilder.append(String.format("\t- %s changed from '%s' to '%s'%n", columnName, oldCin, newCin));
+        }
+
+        return messageBuilder.toString();
+    }
+
 }

@@ -5,10 +5,15 @@ import java.util.ResourceBundle;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableArray;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 
@@ -24,15 +29,20 @@ import javafx.scene.control.TableColumn;
 
 import com.models.Client;
 import com.services.ClientService;
+import com.utils.Constants;
 import com.utils.DateUtils;
+import com.utils.StringUtils;
 import com.db.DatabaseUtil;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public class ClientsController implements Initializable {
-    private static ClientService clientService;
-    private static Connection connection;
+public class ClientsController implements Initializable, AutoCloseable {
+    private ClientService clientService;
+    private Connection connection;
+    private ObservableList<Client> clients;
+    private Map<Long, Map<String, Map<String, String>>> modificationsMap = new HashMap<>();
+
     @FXML
     private TableView<Client> tblClients;
     @FXML
@@ -62,69 +72,204 @@ public class ClientsController implements Initializable {
 
     }
 
-    private void refreshTableRow(TableView<Client> tableView, int rowIndex) {
-        tableView.getItems().set(rowIndex, tableView.getItems().get(rowIndex));
+    private void instructColumnCellsPopulation() {
+        colId.setCellValueFactory(cellData -> new SimpleObjectProperty<Long>(cellData.getValue().getId()));
+        // colCin.setCellValueFactory(new PropertyValueFactory<>("cin"));
+        colCin.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getCin()));
+        colNom.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getNom()));
+        colPrenom.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getPrenom()));
+        colAdresseLivraison.setCellValueFactory(
+                cellData -> new SimpleStringProperty(cellData.getValue().getAdresse_de_livraison()));
+        colEmail.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEmail()));
+        colCreation.setCellValueFactory(
+                cellData -> new SimpleStringProperty(
+                        DateUtils.getFormattedDate(cellData.getValue().getDate_creation())));
+        colMaj.setCellValueFactory(cellData -> new SimpleStringProperty(
+                DateUtils.getFormattedDate(cellData.getValue().getDate_maj())));
+    }
+
+    private void makeColumnsEditable() {
+        colCin.setCellFactory(TextFieldTableCell.forTableColumn());
+
+        colNom.setCellFactory(TextFieldTableCell.forTableColumn());
+
+        colPrenom.setCellFactory(TextFieldTableCell.forTableColumn());
+
+        colAdresseLivraison.setCellFactory(TextFieldTableCell.forTableColumn());
+
+        colEmail.setCellFactory(TextFieldTableCell.forTableColumn());
+    }
+
+    private void setOnEditCommitHandlersForColumns() {
+        colCin.setOnEditCommit(event -> handleEditCommit(event, "cin"));
+
+        colNom.setOnEditCommit(event -> handleEditCommit(event, "nom"));
+
+        colPrenom.setOnEditCommit(event -> handleEditCommit(event, "prenom"));
+
+        colAdresseLivraison.setOnEditCommit(event -> handleEditCommit(event, "adresse_de_livraison"));
+
+        colEmail.setOnEditCommit(event -> handleEditCommit(event, "email"));
+    }
+
+    private void hydrateClientsTableView(ObservableList<Client> clients) {
+        tblClients.getItems().addAll(clients);
+        tblClients.setEditable(true);
+
+        // specify how to populate all cells within each single TableColumn
+        instructColumnCellsPopulation();
+
+        // Make some columns editable
+        makeColumnsEditable();
+
+        setOnEditCommitHandlersForColumns();
+
+    }
+
+    private void handleEditCommit(TableColumn.CellEditEvent<Client, String> event, String columnName) {
+        Client client = event.getRowValue();
+        String oldValue = event.getOldValue();
+        String newValue = event.getNewValue();
+
+        modificationsMap.computeIfAbsent(client.getId(), k -> new HashMap<>())
+                .put(columnName, Map.of("old", oldValue, "new", newValue));
+
+        switch (columnName) {
+            case "cin" -> client.setCin(newValue);
+            case "nom" -> client.setNom(newValue);
+            case "prenom" -> client.setPrenom(newValue);
+            case "adresse_de_livraison" -> client.setAdresse_de_livraison(newValue);
+            case "email" -> client.setEmail(newValue);
+        }
+    }
+
+    @FXML
+    private void saveChanges() {
+        for (Map.Entry<Long, Map<String, Map<String, String>>> entry : modificationsMap.entrySet()) {
+            Long clientId = entry.getKey();
+            Map<String, Map<String, String>> columnModifications = entry.getValue();
+
+            if (showConfirmationModal(clientId, columnModifications)) {
+                Map<String, Object> updates = new HashMap<>();
+
+                for (Map.Entry<String, Map<String, String>> columnEntry : columnModifications.entrySet()) {
+                    String columnName = columnEntry.getKey();
+                    String newValue = columnEntry.getValue().get("new");
+
+                    updates.put(columnName, newValue);
+                }
+
+                clientService.modifier(clientId, updates);
+            } else {
+                int rowIndex = getClientRowIndex(clientId);
+                if (rowIndex != -1) {
+                    revertAndRefreshRow(rowIndex, columnModifications);
+                }
+            }
+        }
+
+        modificationsMap.clear();
+    }
+
+    private void revertAndRefreshRow(int rowIndex, Map<String, Map<String, String>> columnModifications) {
+        Client originalRow = tblClients.getItems().get(rowIndex);
+        Client revertedRow = revertChanges(columnModifications, originalRow);
+        tblClients.getItems().set(rowIndex, revertedRow);
+    }
+
+    private Client revertChanges(Map<String, Map<String, String>> columnModifications, Client originalRow) {
+        // Create a copy of the original row
+        Client revertedRow = copyClientProperties(originalRow);
+
+        // Set properties based on columnModifications
+        for (Map.Entry<String, Map<String, String>> columnEntry : columnModifications.entrySet()) {
+            String columnName = columnEntry.getKey();
+            String oldValue = columnEntry.getValue().get("old");
+
+            switch (columnName) {
+                case "cin" -> revertedRow.setCin(oldValue);
+                case "nom" -> revertedRow.setNom(oldValue);
+                case "prenom" -> revertedRow.setPrenom(oldValue);
+                case "adresse_de_livraison" -> revertedRow.setAdresse_de_livraison(oldValue);
+                case "email" -> revertedRow.setEmail(oldValue);
+                // Add cases for other columns as needed
+            }
+        }
+
+        return revertedRow;
+    }
+
+    private Client copyClientProperties(Client source) {
+        Client copy = new Client();
+        copy.setId(source.getId());
+        copy.setCin(source.getCin());
+        copy.setNom(source.getNom());
+        copy.setPrenom(source.getPrenom());
+        copy.setAdresse_de_livraison(source.getAdresse_de_livraison());
+        copy.setEmail(source.getEmail());
+        copy.setDate_creation(source.getDate_creation());
+        copy.setDate_maj(source.getDate_maj());
+        return copy;
+    }
+
+    private int getClientRowIndex(Long clientId) {
+        for (int i = 0; i < tblClients.getItems().size(); i++) {
+            if (Objects.equals(tblClients.getItems().get(i).getId(), clientId)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private boolean showConfirmationModal(Long clientId, Map<String, Map<String, String>> columnModifications) {
+        String changeMessage = StringUtils.buildChangeMessage(clientId, columnModifications);
+
+        Alert confirmationDialog = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmationDialog.setTitle("Confirmation");
+        confirmationDialog.setHeaderText(Constants.CONFIRMATION_MESSAGE);
+        confirmationDialog.setContentText(changeMessage);
+
+        ButtonType yesButton = new ButtonType("Yes");
+        ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        confirmationDialog.getButtonTypes().setAll(yesButton, cancelButton);
+
+        Optional<ButtonType> result = confirmationDialog.showAndWait();
+        return result.isPresent() && result.get() == yesButton;
+    }
+
+    @FXML
+    private void handleSaveButton(ActionEvent event) {
+        // Implement the logic to save changes
+        saveChanges();
+    }
+
+    @FXML
+    private void handleRefreshButton(ActionEvent event) {
+        // Fetch the updated data from the database
+        clients = FXCollections.observableArrayList(clientService.getAllByPage(1, 10));
+
+        // Clear the existing data and add the updated data
+        tblClients.getItems().clear();
+        tblClients.getItems().addAll(clients);
+    }
+
+    // private void refreshTableRow(TableView<Client> tableView, int rowIndex) {
+    // tableView.getItems().set(rowIndex, tableView.getItems().get(rowIndex));
+    // }
+
+    @Override
+    public void close() throws Exception {
+        connection.close();
     }
 
     public void initialize(URL location, ResourceBundle resources) {
-        List<Client> clients = clientService.getAllByPage(1, 10);
 
-        if (tblClients != null) {
-            tblClients.getItems().addAll(clients);
+        clients = FXCollections.observableArrayList(clientService.getAllByPage(1, 10));
 
-            tblClients.setEditable(true);
+        // Clear the existing data and add the updated data
+        tblClients.getItems().clear();
 
-            // Make the colCin column editable
-            // colCin.setCellValueFactory(new PropertyValueFactory<>("cin"));
-            colCin.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getCin()));
-            colCin.setCellFactory(TextFieldTableCell.forTableColumn()); // Explicitly set the converter
-            colCin.setOnEditCommit(event -> {
-                Client client = event.getRowValue();
-
-                String columnName = "cin"; // Set the actual column name dynamically based on your TableColumn
-
-                Alert confirmationDialog = new Alert(Alert.AlertType.CONFIRMATION);
-                confirmationDialog.setTitle("Confirmation");
-                confirmationDialog.setHeaderText("Are you sure you want to confirm these changes?");
-
-                // Build the message showing the changes
-                String changeMessage = String.format("Change %s from '%s' to '%s'", columnName, event.getOldValue(),
-                        event.getNewValue());
-
-                confirmationDialog.setContentText(changeMessage);
-
-                ButtonType yesButton = new ButtonType("Yes");
-                ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
-                confirmationDialog.getButtonTypes().setAll(yesButton, cancelButton);
-
-                Optional<ButtonType> result = confirmationDialog.showAndWait();
-
-                if (result.isPresent() && result.get() == yesButton) {
-                    client.setCin(event.getNewValue());
-                    // User clicked "Yes," proceed with the modification
-                    Map<String, Object> updates = new HashMap<>();
-                    updates.put(columnName, client.getCin());
-                    clientService.modifier(client.getId(), updates);
-                } else {
-                    // User clicked "Cancel," refresh the entire row
-                    refreshTableRow(tblClients, event.getTablePosition().getRow());
-                }
-            });
-
-            colId.setCellValueFactory(cellData -> new SimpleObjectProperty<Long>(cellData.getValue().getId()));
-            colNom.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getNom()));
-            colPrenom.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getPrenom()));
-            colAdresseLivraison.setCellValueFactory(
-                    cellData -> new SimpleStringProperty(cellData.getValue().getAdresse_de_livraison()));
-            colEmail.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEmail()));
-            colCreation.setCellValueFactory(
-                    cellData -> new SimpleStringProperty(
-                            DateUtils.getFormattedDate(cellData.getValue().getDate_creation())));
-            colMaj.setCellValueFactory(cellData -> new SimpleStringProperty(
-                    DateUtils.getFormattedDate(cellData.getValue().getDate_maj())));
-        } else {
-            System.out.println("Table View is empty");
-        }
+        hydrateClientsTableView(clients);
     }
 
 }
