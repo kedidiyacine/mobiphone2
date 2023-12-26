@@ -19,6 +19,8 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonBar;
+import javafx.scene.control.Button;
+
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableColumn;
 
@@ -56,6 +58,8 @@ public class ClientsController implements Initializable, AutoCloseable {
     private TableColumn<Client, String> colNom;
     @FXML
     private TableColumn<Client, String> colPrenom;
+    @FXML
+    private Button btnSave;
 
     public ClientsController() {
         try {
@@ -123,6 +127,10 @@ public class ClientsController implements Initializable, AutoCloseable {
 
     @FXML
     private void saveChanges() {
+        if (modificationsMap.size() == 0) {
+            return;
+        }
+
         for (Map.Entry<Long, Map<String, Map<String, String>>> entry : modificationsMap.entrySet()) {
             Long clientId = entry.getKey();
             Map<String, Map<String, String>> columnModifications = entry.getValue();
@@ -230,10 +238,16 @@ public class ClientsController implements Initializable, AutoCloseable {
             case "adresse_de_livraison" -> client.setAdresse_de_livraison(newValue);
             case "email" -> client.setEmail(newValue);
         }
+
+        if (btnSave.isDisabled())
+            btnSave.setDisable(false);
+
     }
 
     @FXML
     private void handleSaveButton(ActionEvent event) {
+        if (!btnSave.isDisabled())
+            btnSave.setDisable(true);
         // Implement the logic to save changes
         saveChanges();
     }
@@ -263,6 +277,8 @@ public class ClientsController implements Initializable, AutoCloseable {
 
         // Clear the existing data and add the updated data
         tblClients.getItems().clear();
+
+        btnSave.setDisable(true);
 
         hydrateClientsTableView(clients);
     }

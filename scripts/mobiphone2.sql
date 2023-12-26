@@ -1,4 +1,4 @@
--- DROP DATABASE mobiphone2;
+DROP DATABASE mobiphone2;
 -- Création de la base de données
 CREATE DATABASE IF NOT EXISTS mobiphone2;
 
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS client (
 -- Création de la table "session"
 CREATE TABLE IF NOT EXISTS session (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    compte_id INT UNIQUE,
+    compte_id INT,
     date_debut TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (compte_id) REFERENCES compte(id),
     INDEX idx_compte_id (compte_id)

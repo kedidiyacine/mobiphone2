@@ -12,8 +12,7 @@
    <children>
       <HBox VBox.vgrow="ALWAYS" />
       <Button text="Refresh" onAction="#handleRefreshButton" />
-      <Button text="Save" onAction="#handleSaveButton" />
-
+      <Button fx:id="btnSave" text="Save" onAction="#handleSaveButton" />
       <TableView fx:id="tblClients" HBox.hgrow="ALWAYS">
          <columns>
             <TableColumn fx:id="colId" prefWidth="200.0" text="ID" />
