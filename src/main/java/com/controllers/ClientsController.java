@@ -3,7 +3,6 @@ package com.controllers;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -11,17 +10,13 @@ import java.util.Optional;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableArray;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 
 import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.util.StringConverter;
-import javafx.util.converter.LongStringConverter;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
@@ -126,23 +121,6 @@ public class ClientsController implements Initializable, AutoCloseable {
 
     }
 
-    private void handleEditCommit(TableColumn.CellEditEvent<Client, String> event, String columnName) {
-        Client client = event.getRowValue();
-        String oldValue = event.getOldValue();
-        String newValue = event.getNewValue();
-
-        modificationsMap.computeIfAbsent(client.getId(), k -> new HashMap<>())
-                .put(columnName, Map.of("old", oldValue, "new", newValue));
-
-        switch (columnName) {
-            case "cin" -> client.setCin(newValue);
-            case "nom" -> client.setNom(newValue);
-            case "prenom" -> client.setPrenom(newValue);
-            case "adresse_de_livraison" -> client.setAdresse_de_livraison(newValue);
-            case "email" -> client.setEmail(newValue);
-        }
-    }
-
     @FXML
     private void saveChanges() {
         for (Map.Entry<Long, Map<String, Map<String, String>>> entry : modificationsMap.entrySet()) {
@@ -235,6 +213,23 @@ public class ClientsController implements Initializable, AutoCloseable {
 
         Optional<ButtonType> result = confirmationDialog.showAndWait();
         return result.isPresent() && result.get() == yesButton;
+    }
+
+    private void handleEditCommit(TableColumn.CellEditEvent<Client, String> event, String columnName) {
+        Client client = event.getRowValue();
+        String oldValue = event.getOldValue();
+        String newValue = event.getNewValue();
+
+        modificationsMap.computeIfAbsent(client.getId(), k -> new HashMap<>())
+                .put(columnName, Map.of("old", oldValue, "new", newValue));
+
+        switch (columnName) {
+            case "cin" -> client.setCin(newValue);
+            case "nom" -> client.setNom(newValue);
+            case "prenom" -> client.setPrenom(newValue);
+            case "adresse_de_livraison" -> client.setAdresse_de_livraison(newValue);
+            case "email" -> client.setEmail(newValue);
+        }
     }
 
     @FXML
