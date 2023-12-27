@@ -1,128 +1,148 @@
 package com.controllers;
 
-import java.net.URL;
-import java.util.ResourceBundle;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.*;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
-
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.Button;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonBar.ButtonData;
 
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.TableColumn;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import com.models.Client;
 import com.services.ClientService;
 import com.utils.Constants;
-import com.utils.DateUtils;
 import com.utils.StringUtils;
-import com.db.DatabaseUtil;
+import com.utils.DateUtils;
 
-import java.sql.Connection;
-import java.sql.SQLException;
+public class ClientsController extends TableController<Client, ClientService> {
 
-public class ClientsController implements Initializable, AutoCloseable {
     private ClientService clientService;
-    private Connection connection;
     private ObservableList<Client> clients;
     private Map<Long, Map<String, Map<String, String>>> modificationsMap = new HashMap<>();
+    private final Set<String> editableColumns = new HashSet<>();
 
     @FXML
     private TableView<Client> tblClients;
     @FXML
-    private TableColumn<Client, Long> colId;
-    @FXML
-    private TableColumn<Client, String> colAdresseLivraison;
-    @FXML
-    private TableColumn<Client, String> colCin;
-    @FXML
-    private TableColumn<Client, String> colEmail;
-    @FXML
-    private TableColumn<Client, String> colMaj;
-    @FXML
-    private TableColumn<Client, String> colCreation;
-    @FXML
-    private TableColumn<Client, String> colNom;
-    @FXML
-    private TableColumn<Client, String> colPrenom;
-    @FXML
     private Button btnSave;
 
-    public ClientsController() {
-        try {
-            connection = DatabaseUtil.getConnection();
-            clientService = new ClientService(connection);
-        } catch (SQLException e) {
-            e.printStackTrace();
+    public ClientsController() throws SQLException {
+        super(new TableView<Client>(), Client.class, new ClientService());
+        clientService = new ClientService();
+    }
+
+    private void initializeEditableColumns() {
+        List<TableColumn<Client, ?>> columns = getColumns();
+
+        // Clear existing entries in case I want to reset the editable columns
+        if (!editableColumns.isEmpty())
+            editableColumns.clear();
+
+        for (TableColumn<Client, ?> column : columns) {
+            if (column.getId() != null && !column.getId().isEmpty()
+                    && !Constants.NON_EDITABLE_COLUMNS.contains(column.getId())) {
+                editableColumns.add(column.getId());
+            }
         }
-
     }
 
+    private List<TableColumn<Client, ?>> getColumns() {
+        return tblClients.getColumns().stream().collect(Collectors.toList());
+    }
+
+    @SuppressWarnings("unchecked")
     private void instructColumnCellsPopulation() {
-        colId.setCellValueFactory(cellData -> new SimpleObjectProperty<Long>(cellData.getValue().getId()));
-        // colCin.setCellValueFactory(new PropertyValueFactory<>("cin"));
-        colCin.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getCin()));
-        colNom.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getNom()));
-        colPrenom.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getPrenom()));
-        colAdresseLivraison.setCellValueFactory(
-                cellData -> new SimpleStringProperty(cellData.getValue().getAdresse_de_livraison()));
-        colEmail.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEmail()));
-        colCreation.setCellValueFactory(
-                cellData -> new SimpleStringProperty(
-                        DateUtils.getFormattedDate(cellData.getValue().getDate_creation())));
-        colMaj.setCellValueFactory(cellData -> new SimpleStringProperty(
-                DateUtils.getFormattedDate(cellData.getValue().getDate_maj())));
+        List<TableColumn<Client, ?>> columns = getColumns();
+
+        for (TableColumn<Client, ?> column : columns) {
+            if (column.getId() != null && !column.getId().isEmpty()) {
+                String propertyName = column.getId();
+
+                // if I want to change the column names, the changes need to be reflected here.
+                // to get the proper class getter for the property
+                String methodName = "get" +
+                        propertyName.substring(0, 1).toUpperCase() +
+                        propertyName.substring(1);
+                try {
+                    Method method = Client.class.getMethod(methodName);
+
+                    if (method.getReturnType() == LongProperty.class) {
+                        configureCellValueFactory((TableColumn<Client, Long>) column, method);
+                    } else if (method.getReturnType() == ObjectProperty.class) {
+                        configureCellValueFactory((TableColumn<Client, Object>) column, method);
+                    } else {
+                        // Assuming other types are StringProperty
+                        configureCellValueFactory((TableColumn<Client, String>) column, method);
+                    }
+                } catch (NoSuchMethodException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
+    @SuppressWarnings("unchecked")
+    private <T> void configureCellValueFactory(TableColumn<Client, T> column, Method method) {
+        column.setCellValueFactory(cellData -> {
+            try {
+                Object value = method.invoke(cellData.getValue());
+
+                if (value instanceof ObservableValue) {
+                    return (ObservableValue<T>) value;
+                } else if (value instanceof LocalDateTime) {
+                    return (ObservableValue<T>) new SimpleStringProperty(
+                            DateUtils.getFormattedDate((LocalDateTime) value));
+                } else {
+                    return (ObservableValue<T>) new SimpleStringProperty(value.toString());
+                }
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+            return null;
+        });
+    }
+
+    @SuppressWarnings("unchecked")
     private void makeColumnsEditable() {
-        colCin.setCellFactory(TextFieldTableCell.forTableColumn());
+        List<TableColumn<Client, ?>> columns = getColumns();
 
-        colNom.setCellFactory(TextFieldTableCell.forTableColumn());
-
-        colPrenom.setCellFactory(TextFieldTableCell.forTableColumn());
-
-        colAdresseLivraison.setCellFactory(TextFieldTableCell.forTableColumn());
-
-        colEmail.setCellFactory(TextFieldTableCell.forTableColumn());
+        for (TableColumn<Client, ?> column : columns) {
+            if (column.getId() != null && !column.getId().isEmpty() && editableColumns.contains(column.getId())) {
+                ((TableColumn<Client, String>) column).setCellFactory(TextFieldTableCell.forTableColumn());
+            }
+        }
     }
 
+    @SuppressWarnings("unchecked")
     private void setOnEditCommitHandlersForColumns() {
-        colCin.setOnEditCommit(event -> handleEditCommit(event, "cin"));
+        List<TableColumn<Client, ?>> columns = getColumns();
 
-        colNom.setOnEditCommit(event -> handleEditCommit(event, "nom"));
-
-        colPrenom.setOnEditCommit(event -> handleEditCommit(event, "prenom"));
-
-        colAdresseLivraison.setOnEditCommit(event -> handleEditCommit(event, "adresse_de_livraison"));
-
-        colEmail.setOnEditCommit(event -> handleEditCommit(event, "email"));
+        for (TableColumn<Client, ?> column : columns) {
+            if (column.getId() != null && !column.getId().isEmpty() && editableColumns.contains(column.getId())) {
+                String propertyName = column.getId();
+                ((TableColumn<Client, String>) column).setOnEditCommit(event -> handleEditCommit(event, propertyName));
+            }
+        }
     }
 
     private void hydrateClientsTableView(ObservableList<Client> clients) {
         tblClients.getItems().addAll(clients);
         tblClients.setEditable(true);
 
-        // specify how to populate all cells within each single TableColumn
         instructColumnCellsPopulation();
-
-        // Make some columns editable
         makeColumnsEditable();
-
         setOnEditCommitHandlersForColumns();
-
     }
 
     @FXML
@@ -164,21 +184,18 @@ public class ClientsController implements Initializable, AutoCloseable {
     }
 
     private Client revertChanges(Map<String, Map<String, String>> columnModifications, Client originalRow) {
-        // Create a copy of the original row
         Client revertedRow = copyClientProperties(originalRow);
 
-        // Set properties based on columnModifications
         for (Map.Entry<String, Map<String, String>> columnEntry : columnModifications.entrySet()) {
             String columnName = columnEntry.getKey();
             String oldValue = columnEntry.getValue().get("old");
 
-            switch (columnName) {
-                case "cin" -> revertedRow.setCin(oldValue);
-                case "nom" -> revertedRow.setNom(oldValue);
-                case "prenom" -> revertedRow.setPrenom(oldValue);
-                case "adresse_de_livraison" -> revertedRow.setAdresse_de_livraison(oldValue);
-                case "email" -> revertedRow.setEmail(oldValue);
-                // Add cases for other columns as needed
+            try {
+                Method method = Client.class.getMethod("set" + columnName.substring(0, 1).toUpperCase() +
+                        columnName.substring(1), String.class);
+                method.invoke(revertedRow, oldValue);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
 
@@ -210,77 +227,61 @@ public class ClientsController implements Initializable, AutoCloseable {
     private boolean showConfirmationModal(Long clientId, Map<String, Map<String, String>> columnModifications) {
         String changeMessage = StringUtils.buildChangeMessage(clientId, columnModifications);
 
-        Alert confirmationDialog = new Alert(Alert.AlertType.CONFIRMATION);
+        Alert confirmationDialog = new Alert(AlertType.CONFIRMATION);
         confirmationDialog.setTitle("Confirmation");
         confirmationDialog.setHeaderText(Constants.CONFIRMATION_MESSAGE);
         confirmationDialog.setContentText(changeMessage);
 
         ButtonType yesButton = new ButtonType("Yes");
-        ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        ButtonType cancelButton = new ButtonType("Cancel", ButtonData.CANCEL_CLOSE);
         confirmationDialog.getButtonTypes().setAll(yesButton, cancelButton);
 
         Optional<ButtonType> result = confirmationDialog.showAndWait();
         return result.isPresent() && result.get() == yesButton;
     }
 
-    private void handleEditCommit(TableColumn.CellEditEvent<Client, String> event, String columnName) {
+    private void handleEditCommit(TableColumn.CellEditEvent<Client, String> event, String propertyName) {
         Client client = event.getRowValue();
         String oldValue = event.getOldValue();
         String newValue = event.getNewValue();
 
         modificationsMap.computeIfAbsent(client.getId(), k -> new HashMap<>())
-                .put(columnName, Map.of("old", oldValue, "new", newValue));
+                .put(propertyName, Map.of("old", oldValue, "new", newValue));
 
-        switch (columnName) {
-            case "cin" -> client.setCin(newValue);
-            case "nom" -> client.setNom(newValue);
-            case "prenom" -> client.setPrenom(newValue);
-            case "adresse_de_livraison" -> client.setAdresse_de_livraison(newValue);
-            case "email" -> client.setEmail(newValue);
+        try {
+            Method method = Client.class.getMethod("set" + propertyName.substring(0, 1).toUpperCase() +
+                    propertyName.substring(1), String.class);
+            method.invoke(client, newValue);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         if (btnSave.isDisabled())
             btnSave.setDisable(false);
-
     }
 
     @FXML
     private void handleSaveButton(ActionEvent event) {
         if (!btnSave.isDisabled())
             btnSave.setDisable(true);
-        // Implement the logic to save changes
         saveChanges();
     }
 
     @FXML
     private void handleRefreshButton(ActionEvent event) {
-        // Fetch the updated data from the database
         clients = FXCollections.observableArrayList(clientService.getAllByPage(1, 10));
-
-        // Clear the existing data and add the updated data
         tblClients.getItems().clear();
         tblClients.getItems().addAll(clients);
     }
 
-    // private void refreshTableRow(TableView<Client> tableView, int rowIndex) {
-    // tableView.getItems().set(rowIndex, tableView.getItems().get(rowIndex));
-    // }
-
-    @Override
-    public void close() throws Exception {
-        connection.close();
-    }
-
     public void initialize(URL location, ResourceBundle resources) {
-
         clients = FXCollections.observableArrayList(clientService.getAllByPage(1, 10));
-
-        // Clear the existing data and add the updated data
         tblClients.getItems().clear();
-
         btnSave.setDisable(true);
+
+        // Initialize editable columns
+        initializeEditableColumns();
 
         hydrateClientsTableView(clients);
     }
-
 }
