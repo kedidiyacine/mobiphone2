@@ -1,120 +1,143 @@
 package com.models;
 
 import java.time.LocalDateTime;
+import javafx.beans.property.*;
 
-public abstract class BaseArticle implements Article {
-    protected Long id;
-    protected String type;
-    protected String libelle;
-    protected Double prix_vente;
-    protected int qt_stock;
-    protected LocalDateTime date_creation;
-    protected LocalDateTime date_maj;
+public abstract class BaseArticle<T> implements Article, Identifiable<T, Long> {
+    protected final LongProperty id = new SimpleLongProperty();
+    protected final StringProperty type = new SimpleStringProperty();
+    protected final StringProperty libelle = new SimpleStringProperty();
+    protected final DoubleProperty prix_vente = new SimpleDoubleProperty();
+    protected final IntegerProperty qt_stock = new SimpleIntegerProperty();
+    protected final ObjectProperty<LocalDateTime> date_creation = new SimpleObjectProperty<>();
+    protected final ObjectProperty<LocalDateTime> date_maj = new SimpleObjectProperty<>();
 
     protected BaseArticle(Long id, String type, String libelle, Double prix_vente, int qt_stock) {
-        this.id = id;
-        this.libelle = libelle;
-        this.prix_vente = prix_vente;
-        this.qt_stock = qt_stock;
-        this.type = type;
+        setId(id);
+        setLibelle(libelle);
+        setPrix_vente(prix_vente);
+        setQt_stock(qt_stock);
+        setType(type);
     }
 
     protected BaseArticle(Long id, String type, String libelle, Double prix_vente, int qt_stock,
             LocalDateTime date_creation, LocalDateTime date_maj) {
-        this.id = id;
-        this.libelle = libelle;
-        this.prix_vente = prix_vente;
-        this.qt_stock = qt_stock;
-        this.type = type;
-        this.date_creation = date_creation;
-        this.date_maj = date_maj;
+        this(id, type, libelle, prix_vente, qt_stock);
+        setDate_creation(date_creation);
+        setDate_maj(date_maj);
     }
 
     protected BaseArticle(Long id, String type, Double prix_vente, int qt_stock) {
-        this.id = id;
-        this.prix_vente = prix_vente;
-        this.qt_stock = qt_stock;
-        this.type = type;
+        setId(id);
+        setPrix_vente(prix_vente);
+        setQt_stock(qt_stock);
+        setType(type);
     }
 
     protected BaseArticle(Long id, String type, Double prix_vente, int qt_stock, LocalDateTime date_creation,
             LocalDateTime date_maj) {
-        this.id = id;
-        this.prix_vente = prix_vente;
-        this.qt_stock = qt_stock;
-        this.type = type;
-        this.date_creation = date_creation;
-        this.date_maj = date_maj;
+        this(id, type, prix_vente, qt_stock);
+        setDate_creation(date_creation);
+        setDate_maj(date_maj);
     }
 
     protected BaseArticle(String type, String libelle, Double prix_vente, int qt_stock) {
-        this.libelle = libelle;
-        this.prix_vente = prix_vente;
-        this.qt_stock = qt_stock;
-        this.type = type;
+        setLibelle(libelle);
+        setPrix_vente(prix_vente);
+        setQt_stock(qt_stock);
+        setType(type);
     }
 
     protected BaseArticle(String type, Double prix_vente, int qt_stock) {
-        this.prix_vente = prix_vente;
-        this.qt_stock = qt_stock;
-        this.type = type;
+        setPrix_vente(prix_vente);
+        setQt_stock(qt_stock);
+        setType(type);
     }
 
+    // Getters and setters for JavaFX properties
+
     public String getType() {
-        return this.type;
+        return type.get();
+    }
+
+    public StringProperty typeProperty() {
+        return type;
     }
 
     public void setType(String type) {
-        this.type = type;
+        this.type.set(type);
     }
 
+    @Override
     public Long getId() {
+        return id.get();
+    }
+
+    public LongProperty idProperty() {
         return id;
     }
 
     public void setId(Long id) {
-        this.id = id;
+        this.id.set(id);
     }
 
     public String getLibelle() {
+        return libelle.get();
+    }
+
+    public StringProperty libelleProperty() {
         return libelle;
     }
 
     public void setLibelle(String libelle) {
-        this.libelle = libelle;
+        this.libelle.set(libelle);
     }
 
     public Double getPrix_vente() {
+        return prix_vente.get();
+    }
+
+    public DoubleProperty prix_venteProperty() {
         return prix_vente;
     }
 
     public void setPrix_vente(Double prix_vente) {
-        this.prix_vente = prix_vente;
+        this.prix_vente.set(prix_vente);
     }
 
     public int getQt_stock() {
+        return qt_stock.get();
+    }
+
+    public IntegerProperty qt_stockProperty() {
         return qt_stock;
     }
 
     public void setQt_stock(int qt_stock) {
-        this.qt_stock = qt_stock;
+        this.qt_stock.set(qt_stock);
     }
 
     public LocalDateTime getDate_creation() {
-        return this.date_creation;
+        return date_creation.get();
+    }
+
+    public ObjectProperty<LocalDateTime> date_creationProperty() {
+        return date_creation;
     }
 
     public void setDate_creation(LocalDateTime date_creation) {
-        this.date_creation = date_creation;
+        this.date_creation.set(date_creation);
     }
 
     public LocalDateTime getDate_maj() {
-        return this.date_maj;
+        return date_maj.get();
+    }
+
+    public ObjectProperty<LocalDateTime> date_majProperty() {
+        return date_maj;
     }
 
     public void setDate_maj(LocalDateTime date_maj) {
-        // TODO: consider timezones // LocalDateTime.now();
-        this.date_maj = date_maj;
+        this.date_maj.set(date_maj);
     }
-
 }

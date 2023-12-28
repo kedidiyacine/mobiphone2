@@ -1,11 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.control.Label?>
 
 
-<VBox xmlns="http://javafx.com/javafx/22-ea" xmlns:fx="http://javafx.com/fxml/1"
+<VBox VBox.vgrow="ALWAYS" xmlns="http://javafx.com/javafx/22-ea" xmlns:fx="http://javafx.com/fxml/1"
     fx:controller="com.controllers.ArticlesController">
     <!-- Add your articles-related UI elements here -->
-    <Label text="Articles Tab Content" />
+    <children>
+        <HBox VBox.vgrow="ALWAYS" />
+        <Button fx:id="btnRefresh" text="Refresh" onAction="#handleRefreshButton" />
+        <Button fx:id="btnSave" text="Save" onAction="#handleSaveButton" />
+        <TableView fx:id="tblArticles" HBox.hgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="id" prefWidth="200.0" text="Id" />
+                <TableColumn fx:id="type" prefWidth="200.0" text="Type" />
+                <TableColumn fx:id="libelle" prefWidth="200.0" text="Libelle" />
+                <TableColumn fx:id="prix_vente" prefWidth="200.0" text="Prix Vente" />
+                <TableColumn fx:id="qt_stock" prefWidth="200.0" text="Qt stock" />
+                <TableColumn fx:id="reference" prefWidth="200.0" text="Reference" />
+                <TableColumn fx:id="modele" prefWidth="200.0" text="Modele" />
+                <TableColumn fx:id="marque" prefWidth="200.0" text="Marque" />
+            </columns>
+            <padding>
+                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+            </padding>
+        </TableView>
+    </children>
 </VBox>

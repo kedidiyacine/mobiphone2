@@ -52,6 +52,7 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         this.clazz = clazz;
         this.service = service;
         this.btnSave = btnSave;
+        initialize();
     }
 
     private List<TableColumn<T, ?>> getColumns() {
@@ -154,7 +155,7 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
     }
 
     private void saveChanges() {
-        if (modificationsMap.size() == 0) {
+        if (modificationsMap.isEmpty()) {
             return;
         }
 
@@ -312,7 +313,6 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
     public void initialize() {
         entities = FXCollections.observableArrayList(service.getAllByPage(1, 10));
 
-        System.out.println(tableView);
         tableView.getItems().clear();
         btnSave.setDisable(true);
 

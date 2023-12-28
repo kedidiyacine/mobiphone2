@@ -1,68 +1,79 @@
 package com.models;
 
-public class TelephoneMobile extends BaseArticle implements TelephoneMobileArticle {
-    private String reference;
-    private String marque;
-    private String modele;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+
+public class TelephoneMobile extends BaseArticle<TelephoneMobile> implements TelephoneMobileArticle {
+    private final StringProperty reference = new SimpleStringProperty();
+    private final StringProperty marque = new SimpleStringProperty();
+    private final StringProperty modele = new SimpleStringProperty();
 
     protected TelephoneMobile(Long id, String libelle, Double prix_vente, int qt_stock, String reference,
-            String marque,
-            String modele) {
-        super(id, "Telephone Mobile", libelle, prix_vente, qt_stock);
-        this.reference = reference;
-        this.marque = marque;
-        this.modele = modele;
+            String marque, String modele) {
+        super(id, "telephone mobile", libelle, prix_vente, qt_stock);
+        setReference(reference);
+        setMarque(marque);
+        setModele(modele);
     }
 
-    protected TelephoneMobile(Long id, Double prix_vente, int qt_stock, String reference,
-            String marque,
+    protected TelephoneMobile(Long id, Double prix_vente, int qt_stock, String reference, String marque,
             String modele) {
-        super(id, "Telephone Mobile", prix_vente, qt_stock);
-        this.reference = reference;
-        this.marque = marque;
-        this.modele = modele;
+        super(id, "telephone mobile", prix_vente, qt_stock);
+        setReference(reference);
+        setMarque(marque);
+        setModele(modele);
     }
 
-    protected TelephoneMobile(String libelle, Double prix_vente, int qt_stock, String reference,
-            String marque,
+    protected TelephoneMobile(String libelle, Double prix_vente, int qt_stock, String reference, String marque,
             String modele) {
-        super("Telephone Mobile", libelle, prix_vente, qt_stock);
-        this.reference = reference;
-        this.marque = marque;
-        this.modele = modele;
+        super("telephone mobile", libelle, prix_vente, qt_stock);
+        setReference(reference);
+        setMarque(marque);
+        setModele(modele);
     }
 
-    protected TelephoneMobile(Double prix_vente, int qt_stock, String reference,
-            String marque,
-            String modele) {
-        super("Telephone Mobile", prix_vente, qt_stock);
-        this.reference = reference;
-        this.marque = marque;
-        this.modele = modele;
+    protected TelephoneMobile(Double prix_vente, int qt_stock, String reference, String marque, String modele) {
+        super("telephone mobile", prix_vente, qt_stock);
+        setReference(reference);
+        setMarque(marque);
+        setModele(modele);
     }
+
+    // Getters and setters for JavaFX properties
 
     public String getReference() {
-        return this.reference;
+        return reference.get();
+    }
+
+    public StringProperty referenceProperty() {
+        return reference;
     }
 
     public void setReference(String reference) {
-        this.reference = reference;
+        this.reference.set(reference);
     }
 
     public String getMarque() {
-        return this.marque;
+        return marque.get();
+    }
+
+    public StringProperty marqueProperty() {
+        return marque;
     }
 
     public void setMarque(String marque) {
-        this.marque = marque;
+        this.marque.set(marque);
     }
 
     public String getModele() {
-        return this.modele;
+        return modele.get();
+    }
+
+    public StringProperty modeleProperty() {
+        return modele;
     }
 
     public void setModele(String modele) {
-        this.modele = modele;
+        this.modele.set(modele);
     }
-
 }

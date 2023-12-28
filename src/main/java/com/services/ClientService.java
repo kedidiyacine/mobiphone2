@@ -28,7 +28,8 @@ public class ClientService implements DataService<Client>, AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        connection.close();
+        if (connection != null && connection.isClosed())
+            connection.close();
     }
 
 }

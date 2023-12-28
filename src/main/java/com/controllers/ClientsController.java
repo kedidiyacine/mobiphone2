@@ -22,8 +22,7 @@ public class ClientsController implements Initializable {
     @FXML
     private TableView<Client> tblClients;
 
-    public ClientsController() throws SQLException {
-
+    public ClientsController() {
     }
 
     @FXML
@@ -42,7 +41,6 @@ public class ClientsController implements Initializable {
             tableController = new TableController<Client, ClientService>(
                     tblClients,
                     Client.class, new ClientService(), btnSave);
-            tableController.initialize();
         } catch (SQLException e) {
             e.printStackTrace();
         }

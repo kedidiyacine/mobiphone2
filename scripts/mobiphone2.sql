@@ -1,4 +1,4 @@
-DROP DATABASE mobiphone2;
+-- DROP DATABASE mobiphone2;
 -- Création de la base de données
 CREATE DATABASE IF NOT EXISTS mobiphone2;
 
