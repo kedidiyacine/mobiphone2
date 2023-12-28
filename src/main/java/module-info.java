@@ -1,6 +1,6 @@
 module com {
     requires javafx.controls;
-    requires javafx.fxml;
+    requires transitive javafx.fxml;
     requires javafx.media;
     requires transitive java.sql;
     requires com.zaxxer.hikari;

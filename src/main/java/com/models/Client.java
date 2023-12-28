@@ -1,113 +1,141 @@
 package com.models;
 
+import javafx.beans.property.*;
+
 import java.time.LocalDateTime;
 
-public class Client {
-    private Long id;
-    private String cin;
-    private String nom;
-    private String prenom;
-    private String adresse_de_livraison;
-    private String email;
-    private LocalDateTime date_creation;
-    private LocalDateTime date_maj;
+public class Client implements Identifiable<Client, Long> {
+    private final LongProperty id = new SimpleLongProperty();
+    private final StringProperty cin = new SimpleStringProperty();
+    private final StringProperty nom = new SimpleStringProperty();
+    private final StringProperty prenom = new SimpleStringProperty();
+    private final StringProperty adresse_de_livraison = new SimpleStringProperty();
+    private final StringProperty email = new SimpleStringProperty();
+    private final ObjectProperty<LocalDateTime> date_creation = new SimpleObjectProperty<>();
+    private final ObjectProperty<LocalDateTime> date_maj = new SimpleObjectProperty<>();
 
     public Client() {
     }
 
     public Client(Long id, String cin, String nom, String prenom, String adresse_de_livraison, String email) {
-        this.id = id;
-        this.cin = cin;
-        this.nom = nom;
-        this.prenom = prenom;
-        this.adresse_de_livraison = adresse_de_livraison;
-        this.email = email;
+        setId(id);
+        setCin(cin);
+        setNom(nom);
+        setPrenom(prenom);
+        setAdresse_de_livraison(adresse_de_livraison);
+        setEmail(email);
     }
 
     public Client(Long id, String cin, String nom, String prenom, String adresse_de_livraison, String email,
-            LocalDateTime date_creation,
-            LocalDateTime date_maj) {
+            LocalDateTime date_creation, LocalDateTime date_maj) {
 
-        this.id = id;
-        this.cin = cin;
-        this.nom = nom;
-        this.prenom = prenom;
-        this.adresse_de_livraison = adresse_de_livraison;
-        this.email = email;
-        this.date_creation = date_creation;
-        this.date_maj = date_maj;
+        this(id, cin, nom, prenom, adresse_de_livraison, email);
+        setDate_creation(date_creation);
+        setDate_maj(date_maj);
     }
 
     public Client(String cin, String nom, String prenom, String adresse_de_livraison, String email) {
-        this.cin = cin;
-        this.nom = nom;
-        this.prenom = prenom;
-        this.adresse_de_livraison = adresse_de_livraison;
-        this.email = email;
+        setCin(cin);
+        setNom(nom);
+        setPrenom(prenom);
+        setAdresse_de_livraison(adresse_de_livraison);
+        setEmail(email);
     }
 
+    @Override
     public Long getId() {
-        return id;
+        return id.get();
     }
 
     public void setId(Long id) {
-        this.id = id;
+        this.id.set(id);
+    }
+
+    public LongProperty idProperty() {
+        return id;
     }
 
     public String getCin() {
-        return cin;
+        return cin.get();
     }
 
     public void setCin(String cin) {
-        this.cin = cin;
+        this.cin.set(cin);
+    }
+
+    public StringProperty cinProperty() {
+        return cin;
     }
 
     public String getNom() {
-        return nom;
+        return nom.get();
     }
 
     public void setNom(String nom) {
-        this.nom = nom;
+        this.nom.set(nom);
+    }
+
+    public StringProperty nomProperty() {
+        return nom;
     }
 
     public String getPrenom() {
-        return prenom;
+        return prenom.get();
     }
 
     public void setPrenom(String prenom) {
-        this.prenom = prenom;
+        this.prenom.set(prenom);
+    }
+
+    public StringProperty prenomProperty() {
+        return prenom;
     }
 
     public String getAdresse_de_livraison() {
-        return adresse_de_livraison;
+        return adresse_de_livraison.get();
     }
 
     public void setAdresse_de_livraison(String adresse_de_livraison) {
-        this.adresse_de_livraison = adresse_de_livraison;
+        this.adresse_de_livraison.set(adresse_de_livraison);
+    }
+
+    public StringProperty adresse_de_livraisonProperty() {
+        return adresse_de_livraison;
     }
 
     public String getEmail() {
-        return email;
+        return email.get();
     }
 
     public void setEmail(String email) {
-        this.email = email;
+        this.email.set(email);
+    }
+
+    public StringProperty emailProperty() {
+        return email;
     }
 
     public LocalDateTime getDate_creation() {
-        return date_creation;
+        return date_creation.get();
     }
 
     public void setDate_creation(LocalDateTime date_creation) {
-        this.date_creation = date_creation;
+        this.date_creation.set(date_creation);
+    }
+
+    public ObjectProperty<LocalDateTime> date_creationProperty() {
+        return date_creation;
     }
 
     public LocalDateTime getDate_maj() {
-        return date_maj;
+        return date_maj.get();
     }
 
     public void setDate_maj(LocalDateTime date_maj) {
-        this.date_maj = date_maj;
+        this.date_maj.set(date_maj);
     }
 
+    public ObjectProperty<LocalDateTime> date_majProperty() {
+        return date_maj;
+    }
 }

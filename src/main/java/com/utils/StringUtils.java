@@ -2,6 +2,7 @@ package com.utils;
 
 import java.util.Locale;
 import java.util.Map;
+import java.io.Serializable;
 
 public class StringUtils {
 
@@ -22,9 +23,9 @@ public class StringUtils {
         return sqlBuilder.toString();
     }
 
-    public static String buildChangeMessage(Long clientId, Map<String, Map<String, String>> columnModifications) {
+    public static String buildChangeMessage(Serializable id, Map<String, Map<String, String>> columnModifications) {
         StringBuilder messageBuilder = new StringBuilder();
-        messageBuilder.append(String.format("Changed row with id: %d%n", clientId));
+        messageBuilder.append(String.format("Changed row with id: %d%n", id));
 
         for (Map.Entry<String, Map<String, String>> columnEntry : columnModifications.entrySet()) {
             String columnName = columnEntry.getKey();

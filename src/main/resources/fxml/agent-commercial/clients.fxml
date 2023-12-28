@@ -11,18 +11,18 @@
    fx:controller="com.controllers.ClientsController">
    <children>
       <HBox VBox.vgrow="ALWAYS" />
-      <Button text="Refresh" onAction="#handleRefreshButton" />
+      <Button fx:id="btnRefresh" text="Refresh" onAction="#handleRefreshButton" />
       <Button fx:id="btnSave" text="Save" onAction="#handleSaveButton" />
       <TableView fx:id="tblClients" HBox.hgrow="ALWAYS">
          <columns>
-            <TableColumn fx:id="colId" prefWidth="200.0" text="ID" />
-            <TableColumn fx:id="colCin" prefWidth="200.0" text="CIN" />
-            <TableColumn fx:id="colNom" prefWidth="200.0" text="Nom" />
-            <TableColumn fx:id="colPrenom" prefWidth="200.0" text="Prenom" />
-            <TableColumn fx:id="colAdresseLivraison" prefWidth="200.0" text="Adresse de Livraison" />
-            <TableColumn fx:id="colEmail" prefWidth="200.0" text="Email" />
-            <TableColumn fx:id="colCreation" prefWidth="200.0" text="Date Creation" />
-            <TableColumn fx:id="colMaj" prefWidth="200.0" text="Date Maj" />
+            <TableColumn fx:id="id" prefWidth="200.0" text="ID" />
+            <TableColumn fx:id="cin" prefWidth="200.0" text="CIN" />
+            <TableColumn fx:id="nom" prefWidth="200.0" text="Nom" />
+            <TableColumn fx:id="prenom" prefWidth="200.0" text="Prenom" />
+            <TableColumn fx:id="adresse_de_livraison" prefWidth="200.0" text="Adresse de Livraison" />
+            <TableColumn fx:id="email" prefWidth="200.0" text="Email" />
+            <TableColumn fx:id="date_creation" prefWidth="200.0" text="Date Creation" />
+            <TableColumn fx:id="date_maj" prefWidth="200.0" text="Date Maj" />
          </columns>
          <padding>
             <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
