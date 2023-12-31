@@ -14,6 +14,7 @@ import com.models.Client;
 
 public class ClientDAO implements ClientRepertoire {
     private final Connection connection;
+    private String SQL_TABLE_NAME = "client";
 
     public ClientDAO(Connection connection) {
         this.connection = connection;
@@ -40,7 +41,7 @@ public class ClientDAO implements ClientRepertoire {
             throw new IllegalArgumentException("Updates map cannot be null or empty");
         }
         // Construct the SQL UPDATE statement
-        String sql = StringUtils.buildSqlUpdateStatementFromMap(updates);
+        String sql = StringUtils.buildSqlUpdateStatementFromMap(updates, SQL_TABLE_NAME);
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             // Set the parameters for the update using the values from the updates map

@@ -14,8 +14,12 @@ public class TelephoneMobileService implements DataService<TelephoneMobile>, Aut
 
     public TelephoneMobileService() throws SQLException {
         connection = DatabaseUtil.getConnection();
-        // articleDAO = new ArticleDAO(connection);
+        telephoneMobileDAO = new TelephoneMobileDAO(connection);
+    }
 
+    @Override
+    public List<TelephoneMobile> getAllByPage(int page, int count) {
+        return telephoneMobileDAO.trouver_par_page(page, count);
     }
 
     @Override
@@ -23,12 +27,6 @@ public class TelephoneMobileService implements DataService<TelephoneMobile>, Aut
         if (connection != null && connection.isClosed()) {
             connection.close();
         }
-    }
-
-    @Override
-    public List<TelephoneMobile> getAllByPage(int page, int count) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getAllByPage'");
     }
 
 }

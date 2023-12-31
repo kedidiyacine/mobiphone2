@@ -1,19 +1,47 @@
 package com.models;
 
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
+import java.time.LocalDateTime;
 
 public class TelephoneMobile extends BaseArticle<TelephoneMobile> implements TelephoneMobileArticle {
     private final StringProperty reference = new SimpleStringProperty();
     private final StringProperty marque = new SimpleStringProperty();
     private final StringProperty modele = new SimpleStringProperty();
 
-    protected TelephoneMobile(Long id, String libelle, Double prix_vente, int qt_stock, String reference,
+    public TelephoneMobile(Long id, String libelle, Double prix_vente, int qt_stock, String reference,
             String marque, String modele) {
         super(id, "telephone mobile", libelle, prix_vente, qt_stock);
         setReference(reference);
         setMarque(marque);
         setModele(modele);
+
+    }
+
+    public TelephoneMobile(Long id, String libelle, Double prix_vente, int qt_stock, String reference,
+            String marque, String modele, LocalDateTime date_creation, LocalDateTime date_maj) {
+        super(id, "telephone mobile", libelle, prix_vente, qt_stock, date_creation, date_maj);
+        setReference(reference);
+        setMarque(marque);
+        setModele(modele);
+
+    }
+
+    public TelephoneMobile(String libelle, Double prix_vente, int qt_stock, String reference,
+            String marque, String modele) {
+        super("telephone mobile", libelle, prix_vente, qt_stock);
+        setReference(reference);
+        setMarque(marque);
+        setModele(modele);
+
+    }
+
+    public TelephoneMobile(Long id, String reference,
+            String marque, String modele) {
+        super(id, "telephone mobile");
+        setReference(reference);
+        setMarque(marque);
+        setModele(modele);
+
     }
 
     protected TelephoneMobile(Long id, Double prix_vente, int qt_stock, String reference, String marque,
@@ -22,21 +50,11 @@ public class TelephoneMobile extends BaseArticle<TelephoneMobile> implements Tel
         setReference(reference);
         setMarque(marque);
         setModele(modele);
+
     }
 
-    protected TelephoneMobile(String libelle, Double prix_vente, int qt_stock, String reference, String marque,
-            String modele) {
-        super("telephone mobile", libelle, prix_vente, qt_stock);
-        setReference(reference);
-        setMarque(marque);
-        setModele(modele);
-    }
-
-    protected TelephoneMobile(Double prix_vente, int qt_stock, String reference, String marque, String modele) {
-        super("telephone mobile", prix_vente, qt_stock);
-        setReference(reference);
-        setMarque(marque);
-        setModele(modele);
+    public TelephoneMobile(Long id, String libelle, Double prix_vente, int qt_stock) {
+        super(id, "telephone mobile", libelle, prix_vente, qt_stock);
     }
 
     // Getters and setters for JavaFX properties
@@ -76,4 +94,5 @@ public class TelephoneMobile extends BaseArticle<TelephoneMobile> implements Tel
     public void setModele(String modele) {
         this.modele.set(modele);
     }
+
 }

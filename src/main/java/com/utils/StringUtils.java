@@ -14,8 +14,8 @@ public class StringUtils {
                 word.substring(1);
     }
 
-    public static String buildSqlUpdateStatementFromMap(Map<String, Object> updates) {
-        StringBuilder sqlBuilder = new StringBuilder("UPDATE client SET ");
+    public static String buildSqlUpdateStatementFromMap(Map<String, Object> updates, String sqlTableName) {
+        StringBuilder sqlBuilder = new StringBuilder("UPDATE " + sqlTableName + " SET ");
         updates.forEach((key, value) -> sqlBuilder.append(key).append("=?, "));
         sqlBuilder.delete(sqlBuilder.length() - 2, sqlBuilder.length()); // Remove the last comma
         sqlBuilder.append(" WHERE id=?");

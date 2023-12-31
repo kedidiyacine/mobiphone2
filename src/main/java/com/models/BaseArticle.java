@@ -22,7 +22,18 @@ public abstract class BaseArticle<T> implements Article, Identifiable<T, Long> {
 
     protected BaseArticle(Long id, String type, String libelle, Double prix_vente, int qt_stock,
             LocalDateTime date_creation, LocalDateTime date_maj) {
-        this(id, type, libelle, prix_vente, qt_stock);
+        setId(id);
+        setLibelle(libelle);
+        setPrix_vente(prix_vente);
+        setQt_stock(qt_stock);
+        setType(type);
+        setDate_creation(date_creation);
+        setDate_maj(date_maj);
+    }
+
+    protected BaseArticle(String type, String libelle, Double prix_vente, int qt_stock,
+            LocalDateTime date_creation, LocalDateTime date_maj) {
+        this(type, libelle, prix_vente, qt_stock);
         setDate_creation(date_creation);
         setDate_maj(date_maj);
     }
@@ -51,6 +62,11 @@ public abstract class BaseArticle<T> implements Article, Identifiable<T, Long> {
     protected BaseArticle(String type, Double prix_vente, int qt_stock) {
         setPrix_vente(prix_vente);
         setQt_stock(qt_stock);
+        setType(type);
+    }
+
+    protected BaseArticle(Long id, String type) {
+        setId(id);
         setType(type);
     }
 

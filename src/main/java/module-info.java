@@ -22,6 +22,10 @@ module com {
     // Open the com.services.repertoires.client package for reflection
     opens com.services.DAOs.client;
 
+    opens com.services.DAOs.article;
+
+    opens com.services.DAOs.compte;
+
     // Main package export
     exports com;
 }
