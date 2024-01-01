@@ -40,6 +40,7 @@ public class MainApp extends Application {
     public static void setRoot(String fxml, String title) throws IOException {
         stage.setScene(new Scene(loadFXML(fxml), Color.BLACK));
         stage.setTitle(title);
+        stage.setFullScreen(true);
         stage.show();
     }
 

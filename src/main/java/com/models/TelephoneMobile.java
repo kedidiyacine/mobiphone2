@@ -10,6 +10,9 @@ public class TelephoneMobile extends BaseArticle<TelephoneMobile> implements Tel
     private final StringProperty marque = new SimpleStringProperty();
     private final StringProperty modele = new SimpleStringProperty();
 
+    public TelephoneMobile() {
+    }
+
     public TelephoneMobile(Long id, String libelle, Double prix_vente, int qt_stock, String reference,
             String marque, String modele) {
         super(id, "telephone mobile", libelle, prix_vente, qt_stock);
@@ -98,21 +101,73 @@ public class TelephoneMobile extends BaseArticle<TelephoneMobile> implements Tel
     }
 
     @Override
+    public Long getId() {
+        return super.getId();
+    }
+
+    @Override
+    public String getLibelle() {
+        return super.getLibelle();
+    }
+
+    @Override
+    public Double getPrix_vente() {
+        return super.getPrix_vente();
+    }
+
+    @Override
+    public int getQt_stock() {
+        return super.getQt_stock();
+    }
+
+    @Override
+    public String getType() {
+        return super.getType();
+    }
+
+    @Override
+    public LocalDateTime getDate_creation() {
+        return super.getDate_creation();
+    }
+
+    @Override
+    public LocalDateTime getDate_maj() {
+        return super.getDate_maj();
+    }
+
+    @Override
+    public void setId(Long id) {
+        super.setId(id);
+    }
+
+    @Override
+    public void setType(String type) {
+        super.setType(type);
+    }
+
+    @Override
     public void setPrix_vente(Double prix_vente) {
-        // TODO Auto-generated method stub
         super.setPrix_vente(prix_vente);
     }
 
     @Override
     public void setLibelle(String libelle) {
-        // TODO Auto-generated method stub
         super.setLibelle(libelle);
     }
 
     @Override
     public void setQt_stock(int qt_stock) {
-        // TODO Auto-generated method stub
         super.setQt_stock(qt_stock);
+    }
+
+    @Override
+    public void setDate_creation(LocalDateTime date_creation) {
+        super.setDate_creation(date_creation);
+    }
+
+    @Override
+    public void setDate_maj(LocalDateTime date_maj) {
+        super.setDate_maj(date_maj);
     }
 
 }

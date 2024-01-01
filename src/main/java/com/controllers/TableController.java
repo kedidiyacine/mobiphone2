@@ -22,6 +22,7 @@ import com.utils.DateUtils;
 import com.utils.ReflectionUtils;
 import com.utils.StringUtils;
 
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -87,13 +88,14 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
                         propertyName.substring(0, 1).toUpperCase() +
                         propertyName.substring(1);
                 try {
-                    Method method = clazz.getMethod(methodName);
+                    Method method = clazz.getDeclaredMethod(methodName);
 
-                    // TODO: more
                     if (method.getReturnType() == LongProperty.class) {
                         configureCellValueFactory((TableColumn<T, Long>) column, method);
                     } else if (method.getReturnType() == ObjectProperty.class) {
                         configureCellValueFactory((TableColumn<T, Object>) column, method);
+                    } else if (method.getReturnType() == IntegerProperty.class) {
+                        configureCellValueFactory((TableColumn<T, Integer>) column, method);
                     } else {
                         configureCellValueFactory((TableColumn<T, String>) column, method);
                     }
@@ -179,7 +181,6 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
                 if (service instanceof ClientService) {
                     ((ClientService) service).modifier((Long) id, updates);
                 } else if (service instanceof TelephoneMobileService) {
-                    System.out.println("yes");
                     ((TelephoneMobileService) service).modifier((Long) id, updates);
                 }
             } else {
@@ -207,9 +208,10 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
             String oldValue = columnEntry.getValue().get("old");
 
             try {
-                Method method = clazz.getMethod("set" + columnName.substring(0, 1).toUpperCase() +
-                        columnName.substring(1), String.class);
-                method.invoke(revertedRow, oldValue);
+                Class<?> propertyType = ReflectionUtils.getPropertyType(clazz, columnName);
+                Method method = clazz.getDeclaredMethod("set" + columnName.substring(0, 1).toUpperCase() +
+                        columnName.substring(1), propertyType);
+                method.invoke(revertedRow, ReflectionUtils.convertToCorrectType(oldValue, propertyType));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -234,8 +236,8 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
                             propertyName.substring(0, 1).toUpperCase() +
                             propertyName.substring(1);
 
-                    Method getMethod = clazz.getMethod(getMethodName);
-                    Method setMethod = clazz.getMethod(setMethodName, getMethod.getReturnType());
+                    Method getMethod = clazz.getDeclaredMethod(getMethodName);
+                    Method setMethod = clazz.getDeclaredMethod(setMethodName, getMethod.getReturnType());
 
                     Object value = getMethod.invoke(source);
                     setMethod.invoke(copy, value);

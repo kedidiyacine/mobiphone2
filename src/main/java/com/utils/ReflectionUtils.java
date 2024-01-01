@@ -17,7 +17,7 @@ public class ReflectionUtils {
         propertyTypeMap.put("type", String.class);
         propertyTypeMap.put("libelle", String.class);
         propertyTypeMap.put("prix_vente", Double.class);
-        propertyTypeMap.put("qt_stock", Integer.class);
+        propertyTypeMap.put("qt_stock", int.class);
         propertyTypeMap.put("date_creation", LocalDateTime.class);
         propertyTypeMap.put("date_maj", LocalDateTime.class);
         propertyTypeMap.put("reference", String.class); // Additional property in TelephoneMobile
@@ -49,7 +49,7 @@ public class ReflectionUtils {
             return Long.parseLong(newValue);
         } else if (targetType == Double.class) {
             return Double.parseDouble(newValue);
-        } else if (targetType == Integer.class) {
+        } else if (targetType == int.class) {
             return Integer.parseInt(newValue);
         } else if (targetType == LocalDateTime.class) {
             // Assuming LocalDateTime parsing logic

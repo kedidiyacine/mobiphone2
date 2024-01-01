@@ -12,6 +12,9 @@ public abstract class BaseArticle<T> implements Article, Identifiable<T, Long> {
     protected final ObjectProperty<LocalDateTime> date_creation = new SimpleObjectProperty<>();
     protected final ObjectProperty<LocalDateTime> date_maj = new SimpleObjectProperty<>();
 
+    protected BaseArticle() {
+    }
+
     protected BaseArticle(Long id, String type, String libelle, Double prix_vente, int qt_stock) {
         setId(id);
         setLibelle(libelle);

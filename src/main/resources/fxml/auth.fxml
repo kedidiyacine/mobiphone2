@@ -24,10 +24,11 @@
       <Label layoutX="60.0" layoutY="143.0" text="Password:" />
       <PasswordField fx:id="pwd" layoutX="150.0" layoutY="139.0" prefHeight="25.0"
          prefWidth="190.0" />
-      <Button fx:id="btn_login" layoutX="330.0" layoutY="244.0" mnemonicParsing="false"
-         text="Login" />
       <Label layoutX="60.0" layoutY="203.0" text="Role:" />
       <ComboBox fx:id="role_comboBox" layoutX="150.0" layoutY="191.0" prefHeight="26.0"
          prefWidth="190.0" promptText="choisir votre role" onAction="#handleCbxRole" />
+      <Button fx:id="btn_login" layoutX="330.0" layoutY="244.0" mnemonicParsing="false"
+         text="Login" />
+
    </children>
 </VBox>
