@@ -41,7 +41,7 @@ public class ClientDAO implements ClientRepertoire {
             throw new IllegalArgumentException("Updates map cannot be null or empty");
         }
         // Construct the SQL UPDATE statement
-        String sql = StringUtils.buildSqlUpdateStatementFromMap(updates, SQL_TABLE_NAME);
+        String sql = StringUtils.buildSqlUpdateStatementFromMap(updates, SQL_TABLE_NAME, "id");
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             // Set the parameters for the update using the values from the updates map

@@ -114,11 +114,11 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
 
             // Update telephone_mobile table
             updateTable(Constants.TELEPHONE_TABLE_NAME, id,
-                    filterUpdatesPerColumns(Constants.TELEPHONE_COLUMNS, updates));
+                    filterUpdatesPerColumns(Constants.TELEPHONE_COLUMNS, updates), "id_article");
 
             // Update article table
             updateTable(Constants.ARTICLE_TABLE_NAME, id,
-                    filterUpdatesPerColumns(Constants.ARTICLE_COLUMNS, updates));
+                    filterUpdatesPerColumns(Constants.ARTICLE_COLUMNS, updates), "id");
 
             // Commit the transaction
             connection.commit();
@@ -148,8 +148,8 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
         return null;
     }
 
-    private void updateTable(String tableName, Long id, Map<String, Object> updates) {
-        String sql = StringUtils.buildSqlUpdateStatementFromMap(updates, tableName);
+    private void updateTable(String tableName, Long id, Map<String, Object> updates, String where) {
+        String sql = StringUtils.buildSqlUpdateStatementFromMap(updates, tableName, where);
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             prepareArticleStatementsFromMap(id, preparedStatement, updates);

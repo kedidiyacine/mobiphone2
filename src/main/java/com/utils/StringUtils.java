@@ -14,17 +14,15 @@ public class StringUtils {
                 word.substring(1);
     }
 
-    public static String buildSqlUpdateStatementFromMap(Map<String, Object> updates, String sqlTableName) {
-        Boolean isArticle = sqlTableName.equals(Constants.ARTICLE_TABLE_NAME);
+    public static String buildSqlUpdateStatementFromMap(Map<String, Object> updates, String sqlTableName,
+            String where) {
+
         StringBuilder sqlBuilder = new StringBuilder("UPDATE " + sqlTableName + " SET ");
 
         updates.forEach((key, value) -> sqlBuilder.append(key).append("=?, "));
         sqlBuilder.delete(sqlBuilder.length() - 2, sqlBuilder.length()); // Remove the last comma
-
-        String where = isArticle ? "id" : "id_article";
         sqlBuilder.append(" WHERE ").append(where).append("=?");
 
-        System.out.println(sqlBuilder.toString());
         return sqlBuilder.toString();
     }
 
