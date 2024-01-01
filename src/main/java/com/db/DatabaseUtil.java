@@ -12,7 +12,6 @@ public class DatabaseUtil {
     // Charger le pilote JDBC
     static {
         try {
-            System.out.println("static");
             HikariConfig config = new DBConfig().getConfig();
             dataSource = new HikariDataSource(config);
 

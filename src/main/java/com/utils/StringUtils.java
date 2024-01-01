@@ -15,16 +15,16 @@ public class StringUtils {
     }
 
     public static String buildSqlUpdateStatementFromMap(Map<String, Object> updates, String sqlTableName) {
-        String where;
-        if (sqlTableName.equals(Constants.ARTICLE_TABLE_NAME))
-            where = "id";
-        else
-            where = "id_article";
+        Boolean isArticle = sqlTableName.equals(Constants.ARTICLE_TABLE_NAME);
         StringBuilder sqlBuilder = new StringBuilder("UPDATE " + sqlTableName + " SET ");
+
         updates.forEach((key, value) -> sqlBuilder.append(key).append("=?, "));
         sqlBuilder.delete(sqlBuilder.length() - 2, sqlBuilder.length()); // Remove the last comma
-        sqlBuilder.append(" WHERE " + where + "=?");
 
+        String where = isArticle ? "id" : "id_article";
+        sqlBuilder.append(" WHERE ").append(where).append("=?");
+
+        System.out.println(sqlBuilder.toString());
         return sqlBuilder.toString();
     }
 

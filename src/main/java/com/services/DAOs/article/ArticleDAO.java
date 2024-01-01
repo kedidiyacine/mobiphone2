@@ -9,6 +9,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.utils.Constants;
 import com.utils.StringUtils;
 import com.models.BaseArticle;
@@ -90,48 +92,72 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
         return articles;
     }
 
-    @Override
-    public T modifier(Long id, Map<String, Object> updates) {
-        // Ensure that the updates map is not null and not empty
+    private Map<String, Object> filterUpdatesPerColumns(List<String> columns, Map<String, Object> updates) {
         if (updates == null || updates.isEmpty()) {
             throw new IllegalArgumentException("Updates map cannot be null or empty");
         }
 
-        // Here we need to check which table(s) need(s) updating
-        // whether it's the parent article table or the subclass (telephone_mobile or
-        // etc...)
-        // then update accordingly by
-        // TODO: only update the ones that have a new value
+        return updates.entrySet().stream()
+                .filter(entry -> columns.contains(entry.getKey()) && entry.getValue() != null)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
 
-        String sql;
-        if (updates.entrySet().stream()
-                .anyMatch(entry -> {
-                    System.out.printf("[%s]: value " + entry.getValue(), entry.getKey());
-
-                    return Constants.TELEPHONE_COLUMNS.contains(entry.getKey())
-                            && entry.getValue() != null;
-                })) {
-            // Your code here
-            sql = StringUtils.buildSqlUpdateStatementFromMap(updates, Constants.TELEPHONE_TABLE_NAME);
+    @Override
+    public T modifier(Long id, Map<String, Object> updates) {
+        if (updates == null || updates.isEmpty()) {
+            throw new IllegalArgumentException("Updates map cannot be null or empty");
         }
 
-        else {
-            sql = StringUtils.buildSqlUpdateStatementFromMap(updates, Constants.ARTICLE_TABLE_NAME);
-        }
+        try {
+            // Start a transaction
+            connection.setAutoCommit(false);
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            // Set the parameters for the update using the values from the updates map
-            prepareArticleStatementsFromMap(id, preparedStatement, updates);
-            // Execute the update query
-            preparedStatement.executeUpdate();
+            // Update telephone_mobile table
+            updateTable(Constants.TELEPHONE_TABLE_NAME, id,
+                    filterUpdatesPerColumns(Constants.TELEPHONE_COLUMNS, updates));
+
+            // Update article table
+            updateTable(Constants.ARTICLE_TABLE_NAME, id,
+                    filterUpdatesPerColumns(Constants.ARTICLE_COLUMNS, updates));
+
+            // Commit the transaction
+            connection.commit();
         } catch (SQLException e) {
+            try {
+                // Rollback the transaction in case of an exception
+                connection.rollback();
+            } catch (SQLException rollbackException) {
+                rollbackException.printStackTrace();
+                // Handle the rollback exception appropriately (log it or rethrow)
+            }
+
             e.printStackTrace();
             // Handle the exception appropriately (log it or rethrow)
+        } finally {
+            try {
+                // Reset auto-commit to true to resume normal behavior
+                connection.setAutoCommit(true);
+            } catch (SQLException autoCommitException) {
+                autoCommitException.printStackTrace();
+                // Handle the auto-commit exception appropriately (log it or rethrow)
+            }
         }
 
         // Retrieve the updated entity after the update
         // return trouver_par_id(id);
         return null;
+    }
+
+    private void updateTable(String tableName, Long id, Map<String, Object> updates) {
+        String sql = StringUtils.buildSqlUpdateStatementFromMap(updates, tableName);
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            prepareArticleStatementsFromMap(id, preparedStatement, updates);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle the exception appropriately (log it or rethrow)
+        }
     }
 
     @Override
