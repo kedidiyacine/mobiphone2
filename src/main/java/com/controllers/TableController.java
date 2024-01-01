@@ -1,21 +1,5 @@
 package com.controllers;
 
-import javafx.beans.property.LongProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.cell.TextFieldTableCell;
-
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -32,9 +16,27 @@ import java.util.stream.Collectors;
 import com.models.Identifiable;
 import com.services.ClientService;
 import com.services.DataService;
+import com.services.TelephoneMobileService;
 import com.utils.Constants;
 import com.utils.DateUtils;
+import com.utils.ReflectionUtils;
 import com.utils.StringUtils;
+
+import javafx.beans.property.LongProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.cell.TextFieldTableCell;
 
 public class TableController<T extends Identifiable<T, ?>, S extends DataService<T>> {
 
@@ -87,6 +89,7 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
                 try {
                     Method method = clazz.getMethod(methodName);
 
+                    // TODO: more
                     if (method.getReturnType() == LongProperty.class) {
                         configureCellValueFactory((TableColumn<T, Long>) column, method);
                     } else if (method.getReturnType() == ObjectProperty.class) {
@@ -175,6 +178,9 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
 
                 if (service instanceof ClientService) {
                     ((ClientService) service).modifier((Long) id, updates);
+                } else if (service instanceof TelephoneMobileService) {
+                    System.out.println("yes");
+                    ((TelephoneMobileService) service).modifier((Long) id, updates);
                 }
             } else {
                 int rowIndex = getRowIndex(id);
@@ -283,9 +289,11 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         addToModificationsMap(entityId, propertyName, oldValue, newValue);
 
         try {
-            Method method = clazz.getMethod("set" + propertyName.substring(0, 1).toUpperCase() +
-                    propertyName.substring(1), String.class);
-            method.invoke(entity, newValue);
+            Class<?> propertyType = ReflectionUtils.getPropertyType(clazz, propertyName);
+            Method method = clazz.getDeclaredMethod("set" + propertyName.substring(0, 1).toUpperCase() +
+                    propertyName.substring(1), propertyType);
+            method.invoke(entity, ReflectionUtils.convertToCorrectType(newValue, propertyType));
+
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -1,8 +1,8 @@
 package com.utils;
 
+import java.io.Serializable;
 import java.util.Locale;
 import java.util.Map;
-import java.io.Serializable;
 
 public class StringUtils {
 
@@ -15,10 +15,15 @@ public class StringUtils {
     }
 
     public static String buildSqlUpdateStatementFromMap(Map<String, Object> updates, String sqlTableName) {
+        String where;
+        if (sqlTableName.equals(Constants.ARTICLE_TABLE_NAME))
+            where = "id";
+        else
+            where = "id_article";
         StringBuilder sqlBuilder = new StringBuilder("UPDATE " + sqlTableName + " SET ");
         updates.forEach((key, value) -> sqlBuilder.append(key).append("=?, "));
         sqlBuilder.delete(sqlBuilder.length() - 2, sqlBuilder.length()); // Remove the last comma
-        sqlBuilder.append(" WHERE id=?");
+        sqlBuilder.append(" WHERE " + where + "=?");
 
         return sqlBuilder.toString();
     }

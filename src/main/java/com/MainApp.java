@@ -2,8 +2,8 @@ package com;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.sql.SQLException;
 import java.sql.Connection;
+import java.sql.SQLException;
 
 import com.controllers.ControllersWithAuth;
 import com.db.DatabaseUtil;
@@ -38,7 +38,7 @@ public class MainApp extends Application {
     }
 
     public static void setRoot(String fxml, String title) throws IOException {
-        stage.setScene(new Scene(loadFXML(fxml), 1920, 1080, Color.BLACK));
+        stage.setScene(new Scene(loadFXML(fxml), Color.BLACK));
         stage.setTitle(title);
         stage.show();
     }

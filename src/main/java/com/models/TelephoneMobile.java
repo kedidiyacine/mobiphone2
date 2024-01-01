@@ -1,7 +1,9 @@
 package com.models;
 
-import javafx.beans.property.*;
 import java.time.LocalDateTime;
+
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 
 public class TelephoneMobile extends BaseArticle<TelephoneMobile> implements TelephoneMobileArticle {
     private final StringProperty reference = new SimpleStringProperty();
@@ -93,6 +95,24 @@ public class TelephoneMobile extends BaseArticle<TelephoneMobile> implements Tel
 
     public void setModele(String modele) {
         this.modele.set(modele);
+    }
+
+    @Override
+    public void setPrix_vente(Double prix_vente) {
+        // TODO Auto-generated method stub
+        super.setPrix_vente(prix_vente);
+    }
+
+    @Override
+    public void setLibelle(String libelle) {
+        // TODO Auto-generated method stub
+        super.setLibelle(libelle);
+    }
+
+    @Override
+    public void setQt_stock(int qt_stock) {
+        // TODO Auto-generated method stub
+        super.setQt_stock(qt_stock);
     }
 
 }

@@ -5,26 +5,23 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
-import javafx.scene.control.TableView;
 
+import com.models.BaseArticle;
 import com.models.TelephoneMobile;
-
-import javafx.event.ActionEvent;
-
 import com.services.TelephoneMobileService;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-
-import com.models.BaseArticle;
+import javafx.scene.control.TableView;
 
 public class ArticlesController implements Initializable {
 
     private TableController<? extends BaseArticle<?>, TelephoneMobileService> tableController;
     public List<String> ARTICLE_TYPES = Arrays.asList("telephone mobile", "ligne telephone", "carte telephone",
-            "cle3g");
+            "cle 3g");
     private String selectedType = "telephone mobile";
 
     @FXML
