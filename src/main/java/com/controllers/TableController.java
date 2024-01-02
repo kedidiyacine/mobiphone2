@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.models.Client;
 import com.models.Identifiable;
 import com.services.ClientService;
 import com.services.DataService;
@@ -25,9 +26,11 @@ import com.utils.StringUtils;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -35,6 +38,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.TextFieldTableCell;
@@ -43,6 +47,7 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
 
     private TableView<T> tableView;
     private Button btnSave;
+    private Button btnDelete;
 
     private ObservableList<T> entities;
     private DataService<T> service;
@@ -50,11 +55,13 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
     private final Map<Serializable, Map<String, Map<String, String>>> modificationsMap = new HashMap<>();
     private final Class<T> clazz;
 
-    public TableController(TableView<T> tableView, Class<T> clazz, S service, Button btnSave) {
+    public TableController(TableView<T> tableView, Class<T> clazz, S service, Button btnSave, Button btnDelete) {
+
         this.tableView = tableView;
         this.clazz = clazz;
         this.service = service;
         this.btnSave = btnSave;
+        this.btnDelete = btnDelete;
         initialize();
     }
 
@@ -163,12 +170,14 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         if (modificationsMap.isEmpty()) {
             return;
         }
+        String changeMessage;
 
         for (Map.Entry<Serializable, Map<String, Map<String, String>>> entry : modificationsMap.entrySet()) {
             Serializable id = entry.getKey();
             Map<String, Map<String, String>> columnModifications = entry.getValue();
+            changeMessage = StringUtils.buildChangeMessage(id, columnModifications);
 
-            if (showConfirmationModal(id, columnModifications)) {
+            if (showConfirmationModal(id, changeMessage, Constants.CONFIRMATION_MESSAGE)) {
                 Map<String, Object> updates = new HashMap<>();
 
                 for (Map.Entry<String, Map<String, String>> columnEntry : columnModifications.entrySet()) {
@@ -192,6 +201,35 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         }
 
         modificationsMap.clear();
+    }
+
+    private void deleteItems() {
+        TableView.TableViewSelectionModel<T> selectionModel = tableView.getSelectionModel();
+        ObservableList<T> selectedItems = selectionModel.getSelectedItems();
+
+        if (!selectedItems.isEmpty()) {
+            if (showBulkDeleteConfirmationModal(selectedItems.size())) {
+                for (T selectedItem : selectedItems) {
+                    Serializable id = selectedItem.getId();
+                    if (service instanceof ClientService) {
+                        ((ClientService) service).supprimer_par_id((Long) id);
+                    } else if (service instanceof TelephoneMobileService) {
+                        // ((TelephoneMobileService) service).supprimer_par_id((Long) id);
+                    }
+                }
+
+                // Remove the selected items from the ObservableList
+                entities.removeAll(selectedItems);
+            }
+        }
+
+        // Refresh the TableView only once after all items are deleted
+        // tableView.refresh();
+    }
+
+    private boolean showBulkDeleteConfirmationModal(int itemCount) {
+        String contentText = "Are you sure you want to delete " + itemCount + " item(s)?";
+        return showConfirmationModal(null, contentText, Constants.DELETION_MESSAGE);
     }
 
     private void revertAndRefreshRow(int rowIndex, Map<String, Map<String, String>> columnModifications) {
@@ -260,13 +298,12 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         return -1;
     }
 
-    private boolean showConfirmationModal(Serializable id, Map<String, Map<String, String>> columnModifications) {
-        String changeMessage = StringUtils.buildChangeMessage(id, columnModifications);
+    private boolean showConfirmationModal(Serializable id, String contentText, String headerText) {
 
         Alert confirmationDialog = new Alert(Alert.AlertType.CONFIRMATION);
         confirmationDialog.setTitle("Confirmation");
-        confirmationDialog.setHeaderText(Constants.CONFIRMATION_MESSAGE);
-        confirmationDialog.setContentText(changeMessage);
+        confirmationDialog.setHeaderText(headerText);
+        confirmationDialog.setContentText(contentText);
 
         ButtonType yesButton = new ButtonType("Yes");
         ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
@@ -313,21 +350,48 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
     }
 
     @FXML
-    public void handleRefreshButton(ActionEvent event) {
-        entities = FXCollections.observableArrayList(service.getAllByPage(1, 10));
+    public void handleDeleteButton(ActionEvent event) {
+        deleteItems();
+    }
+
+    private void refreshItems() {
+        entities.setAll(service.getAllByPage(1, 10));
 
         tableView.getItems().clear();
         tableView.getItems().addAll(entities);
+    }
+
+    @FXML
+    public void handleRefreshButton(ActionEvent event) {
+        refreshItems();
     }
 
     public void initialize() {
         entities = FXCollections.observableArrayList(service.getAllByPage(1, 10));
 
         tableView.getItems().clear();
+
+        tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
+        entities.addListener((ListChangeListener.Change<? extends T> change) -> {
+            while (change.next()) {
+                if (change.wasAdded() || change.wasRemoved()) {
+                    // Check if the size is below 10
+                    if (entities.size() < 10) {
+                        // Call refreshItems
+                        refreshItems();
+                    }
+                }
+            }
+        });
+
         btnSave.setDisable(true);
+        btnDelete.disableProperty().bind(
+                tableView.getSelectionModel().selectedItemProperty().isNull());
 
         initializeEditableColumns();
 
         hydrateTableView(entities);
     }
+
 }

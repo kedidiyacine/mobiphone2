@@ -13,6 +13,8 @@
       <HBox VBox.vgrow="ALWAYS" />
       <Button fx:id="btnRefresh" text="Refresh" onAction="#handleRefreshButton" />
       <Button fx:id="btnSave" text="Save" onAction="#handleSaveButton" />
+      <Button fx:id="btnDelete" text="Delete" onAction="#handleDeleteButton" />
+
       <TableView fx:id="tblClients" HBox.hgrow="ALWAYS">
          <columns>
             <TableColumn fx:id="id" prefWidth="200.0" text="ID" />

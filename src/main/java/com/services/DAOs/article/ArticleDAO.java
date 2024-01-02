@@ -93,10 +93,6 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
     }
 
     private Map<String, Object> filterUpdatesPerColumns(List<String> columns, Map<String, Object> updates) {
-        if (updates == null || updates.isEmpty()) {
-            throw new IllegalArgumentException("Updates map cannot be null or empty");
-        }
-
         return updates.entrySet().stream()
                 .filter(entry -> columns.contains(entry.getKey()) && entry.getValue() != null)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));

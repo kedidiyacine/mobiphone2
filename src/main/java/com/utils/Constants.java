@@ -16,10 +16,15 @@ public class Constants {
 
     // Add any other constants here
 
+    public static final String AUTH_FXML = "auth";
+    public static final int MIN_WIDTH = 960;
+    public static final int MIN_HEIGHT = 600;
+
     // Naming convention for constants: UPPERCASE_WITH_UNDERSCORES
     public static final String DATE_TIME_FORMAT_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
     public static final String CONFIRMATION_MESSAGE = "Are you sure you want to confirm these changes?";
+    public static final String DELETION_MESSAGE = "Are you sure you want to delete this item?";
 
     public static final Set<String> NON_EDITABLE_COLUMNS = new HashSet<>(
             Arrays.asList("id", "date_creation", "date_maj"));

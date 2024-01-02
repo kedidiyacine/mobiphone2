@@ -20,6 +20,9 @@ public class ClientsController implements Initializable {
     private Button btnSave;
 
     @FXML
+    private Button btnDelete;
+
+    @FXML
     private TableView<Client> tblClients;
 
     public ClientsController() {
@@ -28,6 +31,11 @@ public class ClientsController implements Initializable {
     @FXML
     private void handleRefreshButton(ActionEvent event) {
         tableController.handleRefreshButton(event);
+    }
+
+    @FXML
+    private void handleDeleteButton(ActionEvent event) {
+        tableController.handleDeleteButton(event);
     }
 
     @FXML
@@ -40,7 +48,7 @@ public class ClientsController implements Initializable {
         try {
             tableController = new TableController<Client, ClientService>(
                     tblClients,
-                    Client.class, new ClientService(), btnSave);
+                    Client.class, new ClientService(), btnSave, btnDelete);
         } catch (SQLException e) {
             e.printStackTrace();
         }

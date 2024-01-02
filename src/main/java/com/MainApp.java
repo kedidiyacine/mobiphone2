@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import com.controllers.ControllersWithAuth;
 import com.db.DatabaseUtil;
 import com.services.AuthService;
+import com.utils.Constants;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -17,7 +18,6 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 public class MainApp extends Application {
-    private static String authUI = "auth";
     private static Stage stage;
     private static AuthService auth;
 
@@ -27,7 +27,7 @@ public class MainApp extends Application {
         try {
             Connection connection = DatabaseUtil.getConnection();
             auth = new AuthService(connection);
-            setRoot(authUI);
+            setRoot(Constants.AUTH_FXML);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -40,9 +40,11 @@ public class MainApp extends Application {
     public static void setRoot(String fxml, String title) throws IOException {
         stage.setScene(new Scene(loadFXML(fxml), Color.BLACK));
         stage.setTitle(title);
-        stage.setMinWidth(1080);
-        stage.setMinHeight(960);
+        stage.setMinWidth(Constants.MIN_WIDTH);
+        stage.setMinHeight(Constants.MIN_HEIGHT);
         stage.sizeToScene();
+        stage.getOutputScaleX();
+        stage.getOutputScaleY();
 
         stage.show();
     }

@@ -18,12 +18,20 @@ public class ClientService implements DataService<Client>, AutoCloseable {
         this.clientDAO = new ClientDAO(connection);
     }
 
+    public Client enregistrer(Client client) {
+        return clientDAO.enregistrer(client);
+    }
+
     public List<Client> getAllByPage(int page, int count) {
         return clientDAO.trouver_par_page(page, count);
     }
 
     public Client modifier(Long id, Map<String, Object> updates) {
         return clientDAO.modifier(id, updates);
+    }
+
+    public void supprimer_par_id(Long id) {
+        clientDAO.supprimer_par_id(id);
     }
 
     @Override

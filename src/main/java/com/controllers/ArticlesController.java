@@ -31,6 +31,9 @@ public class ArticlesController implements Initializable {
     private Button btnSave;
 
     @FXML
+    private Button btnDelete;
+
+    @FXML
     private TableView<TelephoneMobile> tblArticles;
 
     @FXML
@@ -41,6 +44,11 @@ public class ArticlesController implements Initializable {
     @FXML
     private void handleSaveButton(ActionEvent event) {
         tableController.handleSaveButton(event);
+    }
+
+    @FXML
+    private void handleDeleteButton(ActionEvent event) {
+        tableController.handleDeleteButton(event);
     }
 
     @FXML
@@ -55,7 +63,7 @@ public class ArticlesController implements Initializable {
         switch (articleType) {
             case "telephone mobile":
                 tableController = new TableController<TelephoneMobile, TelephoneMobileService>(
-                        tblArticles, TelephoneMobile.class, new TelephoneMobileService(), btnSave);
+                        tblArticles, TelephoneMobile.class, new TelephoneMobileService(), btnSave, btnDelete);
                 break;
             // Add cases for other article types if needed
             default:
