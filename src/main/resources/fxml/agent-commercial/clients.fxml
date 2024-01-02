@@ -11,9 +11,9 @@
    fx:controller="com.controllers.ClientsController">
    <children>
       <HBox VBox.vgrow="ALWAYS" />
-      <Button fx:id="btnRefresh" text="Refresh" onAction="#handleRefreshButton" />
-      <Button fx:id="btnSave" text="Save" onAction="#handleSaveButton" />
-      <Button fx:id="btnDelete" text="Delete" onAction="#handleDeleteButton" />
+      <Button fx:id="btnRefresh" text="Refresh" />
+      <Button fx:id="btnSave" text="Save" />
+      <Button fx:id="btnDelete" text="Delete" />
 
       <TableView fx:id="tblClients" HBox.hgrow="ALWAYS">
          <columns>

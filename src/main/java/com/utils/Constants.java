@@ -25,6 +25,11 @@ public class Constants {
 
     public static final String CONFIRMATION_MESSAGE = "Are you sure you want to confirm these changes?";
     public static final String DELETION_MESSAGE = "Are you sure you want to delete this item?";
+    public static final String REFRESH_TOOLTIP_MSG = "You can refresh once again after 5 seconds";
+    public static final int THROTTLE_DURATION = 5;
+
+    public static final int DEFAULT_INITIAL_PAGE = 1;
+    public static final int DEFAULT_ITEMS_PER_PAGE = 10;
 
     public static final Set<String> NON_EDITABLE_COLUMNS = new HashSet<>(
             Arrays.asList("id", "date_creation", "date_maj"));

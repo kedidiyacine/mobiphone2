@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import com.models.BaseArticle;
 import com.models.TelephoneMobile;
 import com.services.TelephoneMobileService;
 
@@ -18,8 +17,6 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableView;
 
 public class ArticlesController implements Initializable {
-
-    private TableController<? extends BaseArticle<?>, TelephoneMobileService> tableController;
     public List<String> ARTICLE_TYPES = Arrays.asList("telephone mobile", "ligne telephone", "carte telephone",
             "cle 3g");
     private String selectedType = "telephone mobile";
@@ -34,22 +31,10 @@ public class ArticlesController implements Initializable {
     private Button btnDelete;
 
     @FXML
+    private Button btnRefresh;
+
+    @FXML
     private TableView<TelephoneMobile> tblArticles;
-
-    @FXML
-    private void handleRefreshButton(ActionEvent event) {
-        tableController.handleRefreshButton(event);
-    }
-
-    @FXML
-    private void handleSaveButton(ActionEvent event) {
-        tableController.handleSaveButton(event);
-    }
-
-    @FXML
-    private void handleDeleteButton(ActionEvent event) {
-        tableController.handleDeleteButton(event);
-    }
 
     @FXML
     private void handleArticleTypeChange(ActionEvent event) throws SQLException {
@@ -60,10 +45,12 @@ public class ArticlesController implements Initializable {
     }
 
     private void updateTableController(String articleType) throws SQLException {
+        ActionButtons actionButtons = new ActionButtons(btnSave, btnDelete, btnRefresh);
+
         switch (articleType) {
             case "telephone mobile":
-                tableController = new TableController<TelephoneMobile, TelephoneMobileService>(
-                        tblArticles, TelephoneMobile.class, new TelephoneMobileService(), btnSave, btnDelete);
+                new TableController<TelephoneMobile, TelephoneMobileService>(
+                        tblArticles, TelephoneMobile.class, new TelephoneMobileService(), actionButtons);
                 break;
             // Add cases for other article types if needed
             default:

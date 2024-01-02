@@ -1,6 +1,5 @@
 package com.controllers;
 
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableView;
@@ -14,7 +13,6 @@ import com.models.Client;
 import com.services.ClientService;
 
 public class ClientsController implements Initializable {
-    private TableController<Client, ClientService> tableController;
 
     @FXML
     private Button btnSave;
@@ -23,32 +21,36 @@ public class ClientsController implements Initializable {
     private Button btnDelete;
 
     @FXML
+    private Button btnRefresh;
+
+    @FXML
     private TableView<Client> tblClients;
 
     public ClientsController() {
     }
 
-    @FXML
-    private void handleRefreshButton(ActionEvent event) {
-        tableController.handleRefreshButton(event);
-    }
-
-    @FXML
-    private void handleDeleteButton(ActionEvent event) {
-        tableController.handleDeleteButton(event);
-    }
-
-    @FXML
-    private void handleSaveButton(ActionEvent event) {
-        tableController.handleSaveButton(event);
-    }
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         try {
-            tableController = new TableController<Client, ClientService>(
+
+            // Client client;
+            // try (ClientService clientService = new ClientService()) {
+            // for (int i = 0; i < 500; i++) {
+            // client = new Client(i + "cin", i + "nom", i + "prenom", i + "adresse", i +
+            // "email");
+            // clientService.enregistrer(client);
+            // }
+            // } catch (SQLException e) {
+            // throw e;
+            // }
+            // catch (Exception e) {
+            // e.printStackTrace();
+            // }
+
+            new TableController<Client, ClientService>(
                     tblClients,
-                    Client.class, new ClientService(), btnSave, btnDelete);
+                    Client.class, new ClientService(), new ActionButtons(btnSave, btnDelete, btnRefresh));
+            // buttons will eventually be packaged in some data structure
         } catch (SQLException e) {
             e.printStackTrace();
         }

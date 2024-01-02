@@ -1,9 +1,11 @@
 package com.controllers;
 
 import java.io.Serializable;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -13,7 +15,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.models.Client;
 import com.models.Identifiable;
 import com.services.ClientService;
 import com.services.DataService;
@@ -23,10 +24,12 @@ import com.utils.DateUtils;
 import com.utils.ReflectionUtils;
 import com.utils.StringUtils;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -42,27 +45,52 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.beans.property.BooleanProperty;
+import javafx.util.Duration;
+import javafx.scene.control.Tooltip;
 
 public class TableController<T extends Identifiable<T, ?>, S extends DataService<T>> {
 
     private TableView<T> tableView;
+    private ActionButtons actionButtons;
     private Button btnSave;
     private Button btnDelete;
+    private Button btnRefresh;
 
-    private ObservableList<T> entities;
+    private ObservableList<T> entities = FXCollections.observableArrayList();
     private DataService<T> service;
     private final Set<String> editableColumns = new HashSet<>();
     private final Map<Serializable, Map<String, Map<String, String>>> modificationsMap = new HashMap<>();
     private final Class<T> clazz;
 
-    public TableController(TableView<T> tableView, Class<T> clazz, S service, Button btnSave, Button btnDelete) {
+    private final Tooltip refreshTooltip = new Tooltip(Constants.REFRESH_TOOLTIP_MSG);
+    private final BooleanProperty refreshing = new SimpleBooleanProperty(false);
+    private final Timeline refreshThrottle = new Timeline(new KeyFrame(
+            Duration.seconds(Constants.THROTTLE_DURATION),
+            event -> {
+                refreshing.set(false);
+                refreshTooltip.hide();
+                btnRefresh.setDisable(false);
+            }));
 
+    public TableController(TableView<T> tableView, Class<T> clazz, S service, ActionButtons actionButtons) {
         this.tableView = tableView;
         this.clazz = clazz;
         this.service = service;
-        this.btnSave = btnSave;
-        this.btnDelete = btnDelete;
+        this.actionButtons = actionButtons;
         initialize();
+    }
+
+    private void initializeButtons() {
+        this.btnSave = actionButtons.getSaveButton();
+        this.btnRefresh = actionButtons.getRefreshButton();
+        this.btnDelete = actionButtons.getDeleteButton();
+
+        actionButtons.getSaveButton().setOnAction(this::handleSaveButton);
+        actionButtons.getDeleteButton().setOnAction(this::handleDeleteButton);
+        actionButtons.getRefreshButton().setOnAction(this::handleRefreshButton);
     }
 
     private List<TableColumn<T, ?>> getColumns() {
@@ -157,8 +185,9 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         }
     }
 
-    private void hydrateTableView(ObservableList<T> entities) {
+    private void hydrateTableView() {
         tableView.getItems().addAll(entities);
+
         tableView.setEditable(true);
 
         instructColumnCellsPopulation();
@@ -209,6 +238,8 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
 
         if (!selectedItems.isEmpty()) {
             if (showBulkDeleteConfirmationModal(selectedItems.size())) {
+                ObservableList<T> newEntities = FXCollections.observableArrayList(entities);
+
                 for (T selectedItem : selectedItems) {
                     Serializable id = selectedItem.getId();
                     if (service instanceof ClientService) {
@@ -218,13 +249,17 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
                     }
                 }
 
-                // Remove the selected items from the ObservableList
-                entities.removeAll(selectedItems);
+                // Remove the selected items from the new modifiable list
+                newEntities.removeAll(selectedItems);
+
+                // Set the new modifiable list to entities
+                entities = newEntities;
+
+                // Refresh the items
+                refreshItems();
+
             }
         }
-
-        // Refresh the TableView only once after all items are deleted
-        // tableView.refresh();
     }
 
     private boolean showBulkDeleteConfirmationModal(int itemCount) {
@@ -352,32 +387,54 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
     @FXML
     public void handleDeleteButton(ActionEvent event) {
         deleteItems();
+
     }
 
     private void refreshItems() {
-        entities.setAll(service.getAllByPage(1, 10));
+        // Clear the tableView
+        // tableView.getItems().clear();
+        tableView.setItems(FXCollections.observableArrayList());
 
-        tableView.getItems().clear();
-        tableView.getItems().addAll(entities);
+        // Update the entities list using setAll
+        entities = FXCollections.observableArrayList(
+                service.getAllByPage(Constants.DEFAULT_INITIAL_PAGE, Constants.DEFAULT_ITEMS_PER_PAGE));
+        // Set a new modifiable ObservableList to the tableView
+        tableView.setItems(entities);
+
     }
 
     @FXML
     public void handleRefreshButton(ActionEvent event) {
-        refreshItems();
+        if (!refreshing.get()) {
+            refreshItems();
+            refreshing.set(true);
+            refreshThrottle.playFromStart();
+
+            // Display the tooltip during the throttle period
+            refreshTooltip.show(btnRefresh.getScene().getWindow());
+        } else {
+            // Optional: Provide user feedback that the refresh is in progress.
+            // You can show a tooltip, disable the button, etc.
+            System.out.println("Refresh is already in progress.");
+        }
     }
 
     public void initialize() {
-        entities = FXCollections.observableArrayList(service.getAllByPage(1, 10));
+        initializeButtons();
 
-        tableView.getItems().clear();
+        initializeEditableColumns();
 
-        tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        // Populate entities list before hydrating the table view
+        entities = FXCollections.observableArrayList(
+                service.getAllByPage(Constants.DEFAULT_INITIAL_PAGE, Constants.DEFAULT_ITEMS_PER_PAGE));
+
+        hydrateTableView();
 
         entities.addListener((ListChangeListener.Change<? extends T> change) -> {
             while (change.next()) {
                 if (change.wasAdded() || change.wasRemoved()) {
                     // Check if the size is below 10
-                    if (entities.size() < 10) {
+                    if (entities.size() < Constants.DEFAULT_ITEMS_PER_PAGE) {
                         // Call refreshItems
                         refreshItems();
                     }
@@ -385,13 +442,21 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
             }
         });
 
+        tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
         btnSave.setDisable(true);
         btnDelete.disableProperty().bind(
                 tableView.getSelectionModel().selectedItemProperty().isNull());
 
-        initializeEditableColumns();
-
-        hydrateTableView(entities);
+        // Set up listener to disable the refresh button during the 5-second throttle
+        refreshThrottle.statusProperty().addListener((obs, oldStatus, newStatus) -> {
+            if (newStatus == Timeline.Status.RUNNING) {
+                // Optional: Provide user feedback that the button is disabled during throttle.
+                // You can disable the button, show a tooltip, etc.
+                btnRefresh.setDisable(true);
+                System.out.println("Refresh button disabled during throttle.");
+            }
+        });
     }
 
 }
