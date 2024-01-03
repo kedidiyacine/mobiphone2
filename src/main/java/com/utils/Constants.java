@@ -16,21 +16,35 @@ public class Constants {
 
     // Add any other constants here
 
+    // UI
     public static final String AUTH_FXML = "auth";
     public static final int MIN_WIDTH = 960;
     public static final int MIN_HEIGHT = 600;
 
-    // Naming convention for constants: UPPERCASE_WITH_UNDERSCORES
+    //
     public static final String DATE_TIME_FORMAT_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
+    // Tabs
+    public static final String CLIENTS_TAB_TITLE = "Clients";
+    public static final String CLIENTS_TAB_CONTENT_PATH = "/fxml/agent-commercial/clients.fxml";
+
+    public static final String COMMANDES_TAB_TITLE = "Commandes";
+    public static final String COMMANDES_TAB_CONTENT_PATH = "/fxml/agent-commercial/commandes.fxml";
+
+    public static final String ARTICLES_TAB_TITLE = "Articles";
+    public static final String ARTICLES_TAB_CONTENT_PATH = "/fxml/agent-commercial/articles.fxml";
+
+    //
     public static final String CONFIRMATION_MESSAGE = "Are you sure you want to confirm these changes?";
     public static final String DELETION_MESSAGE = "Are you sure you want to delete this item?";
     public static final String REFRESH_TOOLTIP_MSG = "You can refresh once again after 5 seconds";
     public static final int THROTTLE_DURATION = 5;
 
+    // PAGES
     public static final int DEFAULT_INITIAL_PAGE = 1;
     public static final int DEFAULT_ITEMS_PER_PAGE = 10;
 
+    // SQL
     public static final Set<String> NON_EDITABLE_COLUMNS = new HashSet<>(
             Arrays.asList("id", "date_creation", "date_maj"));
 

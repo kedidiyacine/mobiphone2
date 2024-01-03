@@ -3,27 +3,37 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-
 <VBox maxHeight="-Infinity" maxWidth="-Infinity"
     minHeight="-Infinity" minWidth="-Infinity" xmlns:fx="http://javafx.com/fxml/1"
     xmlns="http://javafx.com/javafx/22-ea" fx:controller="com.controllers.HomeController">
-    <children>
+
+    <HBox>
+        <!-- Sidebar with hyperlinks -->
+        <VBox style="-fx-background-color: lightgray; padding: 10px;">
+            <Hyperlink text="Clients" onAction="#openClientsTab" />
+            <Hyperlink text="Commandes" onAction="#openCommandesTab" />
+            <Hyperlink text="Articles" onAction="#openArticlesTab" />
+            <!-- Add more hyperlinks as needed -->
+        </VBox>
+
+        <!-- Main content area with TabPane -->
         <TabPane fx:id="tabPane">
-            <Tab text="Clients" closable="false">
+            <Tab text="Clients">
                 <content>
                     <fx:include source="agent-commercial/clients.fxml" />
                 </content>
             </Tab>
-            <Tab text="Commandes" closable="false">
+            <Tab text="Commandes">
                 <content>
                     <fx:include source="agent-commercial/commandes.fxml" />
                 </content>
             </Tab>
-            <Tab text="Articles" closable="false">
+            <Tab text="Articles">
                 <content>
                     <fx:include source="agent-commercial/articles.fxml" />
                 </content>
             </Tab>
+            <!-- Add more tabs as needed -->
         </TabPane>
-    </children>
+    </HBox>
 </VBox>

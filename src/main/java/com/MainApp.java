@@ -40,11 +40,11 @@ public class MainApp extends Application {
     public static void setRoot(String fxml, String title) throws IOException {
         stage.setScene(new Scene(loadFXML(fxml), Color.BLACK));
         stage.setTitle(title);
+        stage.setWidth(Constants.MIN_WIDTH);
+        stage.setHeight(Constants.MIN_HEIGHT);
+
         stage.setMinWidth(Constants.MIN_WIDTH);
         stage.setMinHeight(Constants.MIN_HEIGHT);
-        stage.sizeToScene();
-        stage.getOutputScaleX();
-        stage.getOutputScaleY();
 
         stage.show();
     }
