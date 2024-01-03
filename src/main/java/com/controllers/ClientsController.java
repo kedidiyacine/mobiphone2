@@ -24,6 +24,9 @@ public class ClientsController implements Initializable {
     private Button btnRefresh;
 
     @FXML
+    private Button btnCreate;
+
+    @FXML
     private TableView<Client> tblClients;
 
     public ClientsController() {
@@ -48,7 +51,7 @@ public class ClientsController implements Initializable {
 
             new TableController<Client, ClientService>(
                     tblClients,
-                    Client.class, new ClientService(), new ActionButtons(btnSave, btnDelete, btnRefresh));
+                    Client.class, new ClientService(), new ActionButtons(btnSave, btnDelete, btnRefresh, btnCreate));
             // buttons will eventually be packaged in some data structure
         } catch (SQLException e) {
             e.printStackTrace();

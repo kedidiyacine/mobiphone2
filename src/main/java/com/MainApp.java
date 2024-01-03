@@ -43,9 +43,6 @@ public class MainApp extends Application {
         stage.setWidth(Constants.MIN_WIDTH);
         stage.setHeight(Constants.MIN_HEIGHT);
 
-        stage.setMinWidth(Constants.MIN_WIDTH);
-        stage.setMinHeight(Constants.MIN_HEIGHT);
-
         stage.show();
     }
 

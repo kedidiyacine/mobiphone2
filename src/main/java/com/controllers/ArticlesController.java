@@ -36,6 +36,9 @@ public class ArticlesController implements Initializable {
     private Button btnRefresh;
 
     @FXML
+    private Button btnCreate;
+
+    @FXML
     private TableView<TelephoneMobile> tblArticles;
 
     @FXML
@@ -47,7 +50,7 @@ public class ArticlesController implements Initializable {
     }
 
     private void updateTableController(String articleType) throws SQLException {
-        ActionButtons actionButtons = new ActionButtons(btnSave, btnDelete, btnRefresh);
+        ActionButtons actionButtons = new ActionButtons(btnSave, btnDelete, btnRefresh, btnCreate);
 
         switch (articleType) {
             case "telephone mobile":

@@ -1,11 +1,13 @@
 package com.controllers;
 
+import java.io.IOException;
+
 import java.io.Serializable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -15,7 +17,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.models.Client;
 import com.models.Identifiable;
+import com.models.TelephoneMobile;
 import com.services.ClientService;
 import com.services.DataService;
 import com.services.TelephoneMobileService;
@@ -31,12 +35,19 @@ import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.scene.layout.Pane;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Group;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
@@ -45,6 +56,8 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.property.BooleanProperty;
@@ -58,6 +71,7 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
     private Button btnSave;
     private Button btnDelete;
     private Button btnRefresh;
+    private Button btnCreate;
 
     private ObservableList<T> entities = FXCollections.observableArrayList();
     private DataService<T> service;
@@ -65,6 +79,7 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
     private final Map<Serializable, Map<String, Map<String, String>>> modificationsMap = new HashMap<>();
     private final Class<T> clazz;
 
+    private Pane overlayPane = new Pane();
     private final Tooltip refreshTooltip = new Tooltip(Constants.REFRESH_TOOLTIP_MSG);
     private final BooleanProperty refreshing = new SimpleBooleanProperty(false);
     private final Timeline refreshThrottle = new Timeline(new KeyFrame(
@@ -80,6 +95,7 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         this.clazz = clazz;
         this.service = service;
         this.actionButtons = actionButtons;
+        initializeButtons();
         initialize();
     }
 
@@ -87,10 +103,13 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         this.btnSave = actionButtons.getSaveButton();
         this.btnRefresh = actionButtons.getRefreshButton();
         this.btnDelete = actionButtons.getDeleteButton();
+        this.btnCreate = actionButtons.getCreateButton();
 
         actionButtons.getSaveButton().setOnAction(this::handleSaveButton);
         actionButtons.getDeleteButton().setOnAction(this::handleDeleteButton);
         actionButtons.getRefreshButton().setOnAction(this::handleRefreshButton);
+        actionButtons.getCreateButton().setOnAction(this::handleCreateButton);
+
     }
 
     private List<TableColumn<T, ?>> getColumns() {
@@ -181,81 +200,6 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
             if (column.getId() != null && !column.getId().isEmpty() && editableColumns.contains(column.getId())) {
                 String propertyName = column.getId();
                 ((TableColumn<T, String>) column).setOnEditCommit(event -> handleEditCommit(event, propertyName));
-            }
-        }
-    }
-
-    private void hydrateTableView() {
-        tableView.getItems().addAll(entities);
-
-        instructColumnCellsPopulation();
-        makeColumnsEditable();
-        setOnEditCommitHandlersForColumns();
-    }
-
-    private void saveChanges() {
-        if (modificationsMap.isEmpty()) {
-            return;
-        }
-        String changeMessage;
-
-        for (Map.Entry<Serializable, Map<String, Map<String, String>>> entry : modificationsMap.entrySet()) {
-            Serializable id = entry.getKey();
-            Map<String, Map<String, String>> columnModifications = entry.getValue();
-            changeMessage = StringUtils.buildChangeMessage(id, columnModifications);
-
-            if (showConfirmationModal(id, changeMessage, Constants.CONFIRMATION_MESSAGE)) {
-                Map<String, Object> updates = new HashMap<>();
-
-                for (Map.Entry<String, Map<String, String>> columnEntry : columnModifications.entrySet()) {
-                    String columnName = columnEntry.getKey();
-                    String newValue = columnEntry.getValue().get("new");
-
-                    updates.put(columnName, newValue);
-                }
-
-                if (service instanceof ClientService) {
-                    ((ClientService) service).modifier((Long) id, updates);
-                } else if (service instanceof TelephoneMobileService) {
-                    ((TelephoneMobileService) service).modifier((Long) id, updates);
-                }
-            } else {
-                int rowIndex = getRowIndex(id);
-                if (rowIndex != -1) {
-                    revertAndRefreshRow(rowIndex, columnModifications);
-                }
-            }
-        }
-
-        modificationsMap.clear();
-    }
-
-    private void deleteItems() {
-        TableView.TableViewSelectionModel<T> selectionModel = tableView.getSelectionModel();
-        ObservableList<T> selectedItems = selectionModel.getSelectedItems();
-
-        if (!selectedItems.isEmpty()) {
-            if (showBulkDeleteConfirmationModal(selectedItems.size())) {
-                ObservableList<T> newEntities = FXCollections.observableArrayList(entities);
-
-                for (T selectedItem : selectedItems) {
-                    Serializable id = selectedItem.getId();
-                    if (service instanceof ClientService) {
-                        ((ClientService) service).supprimer_par_id((Long) id);
-                    } else if (service instanceof TelephoneMobileService) {
-                        ((TelephoneMobileService) service).supprimer_par_id((Long) id);
-                    }
-                }
-
-                // Remove the selected items from the new modifiable list
-                newEntities.removeAll(selectedItems);
-
-                // Set the new modifiable list to entities
-                entities = newEntities;
-
-                // Refresh the items
-                refreshItems();
-
             }
         }
     }
@@ -379,13 +323,71 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
     public void handleSaveButton(ActionEvent event) {
         if (!btnSave.isDisabled())
             btnSave.setDisable(true);
-        saveChanges();
+        if (modificationsMap.isEmpty()) {
+            return;
+        }
+        String changeMessage;
+
+        for (Map.Entry<Serializable, Map<String, Map<String, String>>> entry : modificationsMap.entrySet()) {
+            Serializable id = entry.getKey();
+            Map<String, Map<String, String>> columnModifications = entry.getValue();
+            changeMessage = StringUtils.buildChangeMessage(id, columnModifications);
+
+            if (showConfirmationModal(id, changeMessage, Constants.CONFIRMATION_MESSAGE)) {
+                Map<String, Object> updates = new HashMap<>();
+
+                for (Map.Entry<String, Map<String, String>> columnEntry : columnModifications.entrySet()) {
+                    String columnName = columnEntry.getKey();
+                    String newValue = columnEntry.getValue().get("new");
+
+                    updates.put(columnName, newValue);
+                }
+
+                if (service instanceof ClientService) {
+                    ((ClientService) service).modifier((Long) id, updates);
+                } else if (service instanceof TelephoneMobileService) {
+                    ((TelephoneMobileService) service).modifier((Long) id, updates);
+                }
+            } else {
+                int rowIndex = getRowIndex(id);
+                if (rowIndex != -1) {
+                    revertAndRefreshRow(rowIndex, columnModifications);
+                }
+            }
+        }
+
+        modificationsMap.clear();
     }
 
     @FXML
     public void handleDeleteButton(ActionEvent event) {
-        deleteItems();
+        TableView.TableViewSelectionModel<T> selectionModel = tableView.getSelectionModel();
+        ObservableList<T> selectedItems = selectionModel.getSelectedItems();
 
+        if (!selectedItems.isEmpty()) {
+            if (showBulkDeleteConfirmationModal(selectedItems.size())) {
+                ObservableList<T> newEntities = FXCollections.observableArrayList(entities);
+
+                for (T selectedItem : selectedItems) {
+                    Serializable id = selectedItem.getId();
+                    if (service instanceof ClientService) {
+                        ((ClientService) service).supprimer_par_id((Long) id);
+                    } else if (service instanceof TelephoneMobileService) {
+                        ((TelephoneMobileService) service).supprimer_par_id((Long) id);
+                    }
+                }
+
+                // Remove the selected items from the new modifiable list
+                newEntities.removeAll(selectedItems);
+
+                // Set the new modifiable list to entities
+                entities = newEntities;
+
+                // Refresh the items
+                refreshItems();
+
+            }
+        }
     }
 
     private void refreshItems() {
@@ -417,16 +419,82 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         }
     }
 
-    public void initialize() {
-        initializeButtons();
+    @FXML
+    public void handleCreateButton(ActionEvent event) {
+        try {
+            String contentPath = "/fxml/agent-commercial/create.fxml";
+            URL resourceUrl = getClass().getResource(contentPath);
+            if (resourceUrl == null) {
+                System.err.println("FXML file not found: " + contentPath);
+                return;
+            }
 
+            FXMLLoader loader = new FXMLLoader(resourceUrl);
+            Parent content = loader.load();
+
+            // // need to programatically create the modal content here
+            // if (service instanceof ClientService) {
+            // // createClientModal();
+            // Client client = new Client(); // fill with the modal's inputs
+            // ((ClientService) service).enregistrer(client);
+            // } else if (service instanceof TelephoneMobileService) {
+            // // createTelephoneModal();
+            // TelephoneMobile telephoneMobile = new TelephoneMobile(); // fill with the
+            // modal's inputs
+            // ((TelephoneMobileService) service).enregistrer(telephoneMobile);
+            // }
+
+            content.setId(contentPath);
+
+            Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+
+            overlayPane.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5);");
+            overlayPane.setMouseTransparent(true);
+            overlayPane.prefWidthProperty().bind(currentStage.getScene().widthProperty());
+            overlayPane.prefHeightProperty().bind(currentStage.getScene().heightProperty());
+
+            Group rootGroup = new Group(currentStage.getScene().getRoot(), overlayPane);
+            Scene mainScene = new Scene(rootGroup);
+
+            currentStage.setScene(mainScene);
+
+            Stage modalStage = new Stage();
+            modalStage.initModality(Modality.APPLICATION_MODAL);
+            modalStage.initOwner(currentStage);
+            modalStage.setTitle("Create Modal"); // customize depending on what entity we're creating
+            modalStage.setScene(new Scene(content));
+
+            modalStage.setOnCloseRequest(e -> {
+                // Remove overlayPane when modal is closed
+                overlayPane.setVisible(false);
+            });
+
+            // Add a listener to the showing property of the modal
+            modalStage.showingProperty().addListener((observable, oldValue, newValue) -> {
+                overlayPane.setVisible(newValue);
+            });
+
+            // could create witbutton YES or cancel and execute the operations depending on
+            // the pressed button
+            // or let the modalcontroller take care of it
+            // which will require sending the service from this controller to the modal's
+            // one
+            modalStage.showAndWait();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void initialize() {
         initializeEditableColumns();
+        instructColumnCellsPopulation();
+        makeColumnsEditable();
+        setOnEditCommitHandlersForColumns();
 
         // Populate entities list before hydrating the table view
         entities = FXCollections.observableArrayList(
                 service.getAllByPage(Constants.DEFAULT_INITIAL_PAGE, Constants.DEFAULT_ITEMS_PER_PAGE));
-
-        hydrateTableView();
 
         entities.addListener((ListChangeListener.Change<? extends T> change) -> {
             while (change.next()) {
@@ -440,6 +508,7 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
             }
         });
 
+        tableView.getItems().addAll(entities);
         tableView.setEditable(true);
         tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 

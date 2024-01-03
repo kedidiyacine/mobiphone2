@@ -18,7 +18,7 @@
 
         <!-- Main content area with TabPane -->
         <TabPane fx:id="tabPane">
-            <Tab text="Clients">
+            <!-- <Tab text="Clients">
                 <content>
                     <fx:include source="agent-commercial/clients.fxml" />
                 </content>
@@ -32,7 +32,7 @@
                 <content>
                     <fx:include source="agent-commercial/articles.fxml" />
                 </content>
-            </Tab>
+            </Tab> -->
             <!-- Add more tabs as needed -->
         </TabPane>
     </HBox>

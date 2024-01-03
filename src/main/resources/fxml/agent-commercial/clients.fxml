@@ -13,6 +13,7 @@
       <HBox VBox.vgrow="ALWAYS" />
       <Button fx:id="btnRefresh" text="Refresh" />
       <Button fx:id="btnSave" text="Save" />
+      <Button fx:id="btnCreate" text="Create" />
       <Button fx:id="btnDelete" text="Delete" />
 
       <TableView fx:id="tblClients" HBox.hgrow="ALWAYS">
