@@ -71,6 +71,20 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
         return null;
     }
 
+    @Override
+    public void supprimer_par_id(Long id) {
+        String sql = StringUtils.buildSQLDeleteStatement();
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setLong(1, id);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle the exception appropriately (log it or rethrow)
+        }
+
+    }
+
     public List<T> trouver_par_page(int page, int items_count, String tablename) {
         List<T> articles = new ArrayList<>();
         String sql = String.format(Constants.SELECT_ARTICLES_BY_PAGE_SQL, Constants.ARTICLE_TABLE_NAME, tablename,
@@ -108,13 +122,19 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
             // Start a transaction
             connection.setAutoCommit(false);
 
-            // Update telephone_mobile table
-            updateTable(Constants.TELEPHONE_TABLE_NAME, id,
-                    filterUpdatesPerColumns(Constants.TELEPHONE_COLUMNS, updates), "id_article");
+            if (Constants.TELEPHONE_COLUMNS.stream().anyMatch(updates::containsKey)) {
+                // Update telephone_mobile table
+                updateTable(Constants.TELEPHONE_TABLE_NAME, id,
+                        filterUpdatesPerColumns(Constants.TELEPHONE_COLUMNS, updates),
+                        Constants.SUB_ARTICLE_PRIMARY_KEY);
+            }
 
-            // Update article table
-            updateTable(Constants.ARTICLE_TABLE_NAME, id,
-                    filterUpdatesPerColumns(Constants.ARTICLE_COLUMNS, updates), "id");
+            if (Constants.ARTICLE_COLUMNS.stream().anyMatch(updates::containsKey)) {
+                // Update article table
+                updateTable(Constants.ARTICLE_TABLE_NAME, id,
+                        filterUpdatesPerColumns(Constants.ARTICLE_COLUMNS, updates),
+                        Constants.ARTICLE_PRIMARY_KEY);
+            }
 
             // Commit the transaction
             connection.commit();
@@ -175,12 +195,6 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
     }
 
     @Override
-    public void supprimer_par_id(Long id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'supprimer_par_id'");
-    }
-
-    @Override
     public List<T> trouver_par_type(String type) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'trouver_par_type'");
@@ -212,12 +226,14 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
         try (ResultSet generatedKeys = preparedStatementArticle.getGeneratedKeys()) {
             if (generatedKeys.next()) {
                 Long generatedId = generatedKeys.getLong(1);
-                LocalDateTime generatedDateCreation = generatedKeys.getTimestamp(2).toLocalDateTime();
-                LocalDateTime generatedDateMaj = generatedKeys.getTimestamp(3).toLocalDateTime();
+                // LocalDateTime generatedDateCreation =
+                // generatedKeys.getTimestamp(2).toLocalDateTime();
+                // LocalDateTime generatedDateMaj =
+                // generatedKeys.getTimestamp(3).toLocalDateTime();
 
                 entity.setId(generatedId);
-                entity.setDate_creation(generatedDateCreation);
-                entity.setDate_maj(generatedDateMaj);
+                // entity.setDate_creation(generatedDateCreation);
+                // entity.setDate_maj(generatedDateMaj);
 
                 executeTypeInsert(entity, preparedStatementType);
             } else {

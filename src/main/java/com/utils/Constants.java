@@ -35,6 +35,9 @@ public class Constants {
             Arrays.asList("id", "date_creation", "date_maj"));
 
     public static final String ARTICLE_TABLE_NAME = "article";
+    public static final String ARTICLE_PRIMARY_KEY = "id";
+    public static final String SUB_ARTICLE_PRIMARY_KEY = "id_article";
+
     public static final String TELEPHONE_TABLE_NAME = "telephone_mobile";
     public static final String TELEPHONE_MOBILE_TYPE = "telephone mobile";
     public static final String INSERT_ARTICLE_SQL = "INSERT INTO article (type, libelle, prix_vente, qt_stock) VALUES (?, ?, ?, ?)";

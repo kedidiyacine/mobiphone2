@@ -6,7 +6,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import com.models.Client;
 import com.models.TelephoneMobile;
+import com.services.ClientService;
 import com.services.TelephoneMobileService;
 
 import javafx.event.ActionEvent;
@@ -61,7 +63,23 @@ public class ArticlesController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+
         try {
+
+            // TelephoneMobile phone;
+            // try (TelephoneMobileService s = new TelephoneMobileService()) {
+
+            // for (int i = 0; i < 500; i++) {
+            // phone = new TelephoneMobile("samsung pro" + i, 500.0 * i,
+            // 4, "1234" + i, "5678" + i, "samsung" + i);
+            // s.enregistrer(phone);
+            // }
+
+            // } catch (SQLException e) {
+            // throw e;
+            // } catch (Exception e) {
+            // e.printStackTrace();
+            // }
             cmbArticleType.getItems().addAll(ARTICLE_TYPES);
             cmbArticleType.getSelectionModel().selectFirst();
             selectedType = cmbArticleType.getValue();

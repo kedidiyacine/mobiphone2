@@ -6,27 +6,13 @@ import java.util.Map;
 import java.sql.Connection;
 
 import com.models.TelephoneMobile;
+import com.utils.Constants;
 
 public class TelephoneMobileDAO implements TelephoneMobileRepertoire {
     protected final ArticleDAO<TelephoneMobile> articleDAO;
 
     public TelephoneMobileDAO(Connection connection) {
         this.articleDAO = new ArticleDAO<TelephoneMobile>(connection);
-    }
-
-    @Override
-    public TelephoneMobile enregistrer(TelephoneMobile telephoneMobile) {
-        return articleDAO.enregistrer(telephoneMobile);
-    }
-
-    @Override
-    public TelephoneMobile trouver_par_id(Long id) {
-        return articleDAO.trouver_par_id(id, "telephone_mobile");
-    }
-
-    @Override
-    public List<TelephoneMobile> trouver_par_page(int page, int items_count) {
-        return articleDAO.trouver_par_page(page, items_count, "telephone_mobile");
     }
 
     @Override
@@ -40,6 +26,21 @@ public class TelephoneMobileDAO implements TelephoneMobileRepertoire {
     }
 
     @Override
+    public TelephoneMobile enregistrer(TelephoneMobile telephoneMobile) {
+        return articleDAO.enregistrer(telephoneMobile);
+    }
+
+    @Override
+    public TelephoneMobile trouver_par_id(Long id) {
+        return articleDAO.trouver_par_id(id, Constants.TELEPHONE_TABLE_NAME);
+    }
+
+    @Override
+    public List<TelephoneMobile> trouver_par_page(int page, int items_count) {
+        return articleDAO.trouver_par_page(page, items_count, Constants.TELEPHONE_TABLE_NAME);
+    }
+
+    @Override
     public List<TelephoneMobile> trouver_tout() {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'trouver_tout'");
@@ -47,8 +48,7 @@ public class TelephoneMobileDAO implements TelephoneMobileRepertoire {
 
     @Override
     public void supprimer_par_id(Long id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'supprimer_par_id'");
+        articleDAO.supprimer_par_id(id);
     }
 
     @Override

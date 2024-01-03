@@ -26,6 +26,15 @@ public class StringUtils {
         return sqlBuilder.toString();
     }
 
+    public static String buildSQLDeleteStatement() {
+        StringBuilder sqlBuilder = new StringBuilder();
+        sqlBuilder.append(String.format("DELETE FROM %s WHERE %s =?", Constants.ARTICLE_TABLE_NAME,
+                Constants.ARTICLE_PRIMARY_KEY));
+
+        return sqlBuilder.toString();
+
+    }
+
     public static String buildChangeMessage(Serializable id, Map<String, Map<String, String>> columnModifications) {
         StringBuilder messageBuilder = new StringBuilder();
         messageBuilder.append(String.format("Changed row with id: %d%n", id));

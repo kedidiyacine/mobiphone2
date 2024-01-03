@@ -188,8 +188,6 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
     private void hydrateTableView() {
         tableView.getItems().addAll(entities);
 
-        tableView.setEditable(true);
-
         instructColumnCellsPopulation();
         makeColumnsEditable();
         setOnEditCommitHandlersForColumns();
@@ -245,7 +243,7 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
                     if (service instanceof ClientService) {
                         ((ClientService) service).supprimer_par_id((Long) id);
                     } else if (service instanceof TelephoneMobileService) {
-                        // ((TelephoneMobileService) service).supprimer_par_id((Long) id);
+                        ((TelephoneMobileService) service).supprimer_par_id((Long) id);
                     }
                 }
 
@@ -442,6 +440,7 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
             }
         });
 
+        tableView.setEditable(true);
         tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
         btnSave.setDisable(true);

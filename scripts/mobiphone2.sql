@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS telephone_mobile (
     reference VARCHAR(255) UNIQUE,
     marque VARCHAR(255),
     modele VARCHAR(255),
-    FOREIGN KEY (id_article) REFERENCES article(id)
+    FOREIGN KEY (id_article) REFERENCES article(id) ON DELETE CASCADE
 );
 
 -- Création de la table "ligne_telephonique"
@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS ligne_telephonique (
     numero VARCHAR(255) UNIQUE,
     operateur VARCHAR(255),
     montant_min_consommation DOUBLE,
-    FOREIGN KEY (id_article) REFERENCES article(id)
+    FOREIGN KEY (id_article) REFERENCES article(id) ON DELETE CASCADE
 );
 
 -- Création de la table "cle_3g"
@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS cle_3g (
     numero_serie VARCHAR(255) UNIQUE,
     debit_connexion DOUBLE,
     capacite_max_telechargement DOUBLE,
-    FOREIGN KEY (id_article) REFERENCES article(id)
+    FOREIGN KEY (id_article) REFERENCES article(id) ON DELETE CASCADE
 );
 
 -- Création de la table "carte_telephonique"
@@ -88,5 +88,5 @@ CREATE TABLE IF NOT EXISTS carte_telephonique (
     duree_validite INT,
     type_carte VARCHAR(25),
     operateur VARCHAR(255),
-    FOREIGN KEY (id_article) REFERENCES article(id)
+    FOREIGN KEY (id_article) REFERENCES article(id) ON DELETE CASCADE
 );

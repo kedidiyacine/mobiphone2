@@ -18,6 +18,10 @@ public class TelephoneMobileService implements DataService<TelephoneMobile>, Aut
         telephoneMobileDAO = new TelephoneMobileDAO(connection);
     }
 
+    public TelephoneMobile enregistrer(TelephoneMobile telephoneMobile) {
+        return telephoneMobileDAO.enregistrer(telephoneMobile);
+    }
+
     @Override
     public List<TelephoneMobile> getAllByPage(int page, int count) {
         return telephoneMobileDAO.trouver_par_page(page, count);
@@ -25,6 +29,10 @@ public class TelephoneMobileService implements DataService<TelephoneMobile>, Aut
 
     public TelephoneMobile modifier(Long id, Map<String, Object> updates) {
         return telephoneMobileDAO.modifier(id, updates);
+    }
+
+    public void supprimer_par_id(Long id) {
+        telephoneMobileDAO.supprimer_par_id(id);
     }
 
     @Override

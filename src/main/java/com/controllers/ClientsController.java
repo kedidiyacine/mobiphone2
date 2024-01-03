@@ -42,8 +42,7 @@ public class ClientsController implements Initializable {
             // }
             // } catch (SQLException e) {
             // throw e;
-            // }
-            // catch (Exception e) {
+            // } catch (Exception e) {
             // e.printStackTrace();
             // }
 
