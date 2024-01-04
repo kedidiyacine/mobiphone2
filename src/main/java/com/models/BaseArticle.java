@@ -1,7 +1,17 @@
 package com.models;
 
 import java.time.LocalDateTime;
-import javafx.beans.property.*;
+
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.LongProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleLongProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 
 public abstract class BaseArticle<T> implements Article, Identifiable<T, Long> {
     protected final LongProperty id = new SimpleLongProperty();
@@ -15,7 +25,7 @@ public abstract class BaseArticle<T> implements Article, Identifiable<T, Long> {
     protected BaseArticle() {
     }
 
-    protected BaseArticle(Long id, String type, String libelle, Double prix_vente, int qt_stock) {
+    protected BaseArticle(Long id, String type, String libelle, Double prix_vente, Integer qt_stock) {
         setId(id);
         setLibelle(libelle);
         setPrix_vente(prix_vente);
@@ -23,7 +33,7 @@ public abstract class BaseArticle<T> implements Article, Identifiable<T, Long> {
         setType(type);
     }
 
-    protected BaseArticle(Long id, String type, String libelle, Double prix_vente, int qt_stock,
+    protected BaseArticle(Long id, String type, String libelle, Double prix_vente, Integer qt_stock,
             LocalDateTime date_creation, LocalDateTime date_maj) {
         setId(id);
         setLibelle(libelle);
@@ -34,35 +44,35 @@ public abstract class BaseArticle<T> implements Article, Identifiable<T, Long> {
         setDate_maj(date_maj);
     }
 
-    protected BaseArticle(String type, String libelle, Double prix_vente, int qt_stock,
+    protected BaseArticle(String type, String libelle, Double prix_vente, Integer qt_stock,
             LocalDateTime date_creation, LocalDateTime date_maj) {
         this(type, libelle, prix_vente, qt_stock);
         setDate_creation(date_creation);
         setDate_maj(date_maj);
     }
 
-    protected BaseArticle(Long id, String type, Double prix_vente, int qt_stock) {
+    protected BaseArticle(Long id, String type, Double prix_vente, Integer qt_stock) {
         setId(id);
         setPrix_vente(prix_vente);
         setQt_stock(qt_stock);
         setType(type);
     }
 
-    protected BaseArticle(Long id, String type, Double prix_vente, int qt_stock, LocalDateTime date_creation,
+    protected BaseArticle(Long id, String type, Double prix_vente, Integer qt_stock, LocalDateTime date_creation,
             LocalDateTime date_maj) {
         this(id, type, prix_vente, qt_stock);
         setDate_creation(date_creation);
         setDate_maj(date_maj);
     }
 
-    protected BaseArticle(String type, String libelle, Double prix_vente, int qt_stock) {
+    protected BaseArticle(String type, String libelle, Double prix_vente, Integer qt_stock) {
         setLibelle(libelle);
         setPrix_vente(prix_vente);
         setQt_stock(qt_stock);
         setType(type);
     }
 
-    protected BaseArticle(String type, Double prix_vente, int qt_stock) {
+    protected BaseArticle(String type, Double prix_vente, Integer qt_stock) {
         setPrix_vente(prix_vente);
         setQt_stock(qt_stock);
         setType(type);
@@ -124,7 +134,7 @@ public abstract class BaseArticle<T> implements Article, Identifiable<T, Long> {
         this.prix_vente.set(prix_vente);
     }
 
-    public int getQt_stock() {
+    public Integer getQt_stock() {
         return qt_stock.get();
     }
 
@@ -132,7 +142,7 @@ public abstract class BaseArticle<T> implements Article, Identifiable<T, Long> {
         return qt_stock;
     }
 
-    public void setQt_stock(int qt_stock) {
+    public void setQt_stock(Integer qt_stock) {
         this.qt_stock.set(qt_stock);
     }
 

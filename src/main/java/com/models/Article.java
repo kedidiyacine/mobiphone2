@@ -11,9 +11,9 @@ public interface Article {
 
     public void setType(String type);
 
-    int getQt_stock();
+    Integer getQt_stock();
 
-    public void setQt_stock(int qt_stock);
+    public void setQt_stock(Integer qt_stock);
 
     Double getPrix_vente();
 

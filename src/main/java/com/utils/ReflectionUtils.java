@@ -1,5 +1,6 @@
 package com.utils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -17,7 +18,7 @@ public class ReflectionUtils {
         propertyTypeMap.put("type", String.class);
         propertyTypeMap.put("libelle", String.class);
         propertyTypeMap.put("prix_vente", Double.class);
-        propertyTypeMap.put("qt_stock", int.class);
+        propertyTypeMap.put("qt_stock", Integer.class);
         propertyTypeMap.put("date_creation", LocalDateTime.class);
         propertyTypeMap.put("date_maj", LocalDateTime.class);
         propertyTypeMap.put("reference", String.class); // Additional property in TelephoneMobile
@@ -48,13 +49,34 @@ public class ReflectionUtils {
         }
     }
 
+    public static Object invokeMethod(Object target, String methodName, Class<?>[] parameterTypes, Object[] args) {
+        try {
+            Method method = target.getClass().getDeclaredMethod(methodName, parameterTypes);
+            return method.invoke(target, args);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace(); // Handle the exception appropriately
+            return null;
+        }
+    }
+
+    public static void setPropertyValue(Object target, String propertyName, Object value) {
+        try {
+            Method method = target.getClass().getDeclaredMethod("set" +
+                    propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1),
+                    value.getClass());
+            method.invoke(target, value);
+        } catch (Exception e) {
+            e.printStackTrace(); // Handle the exception appropriately
+        }
+    }
+
     public static Object convertToCorrectType(String newValue, Class<?> targetType) {
         // Implement conversion logic based on the target type
         if (targetType == Long.class) {
             return Long.parseLong(newValue);
         } else if (targetType == Double.class) {
             return Double.parseDouble(newValue);
-        } else if (targetType == int.class) {
+        } else if (targetType == Integer.class) {
             return Integer.parseInt(newValue);
         } else if (targetType == LocalDateTime.class) {
             // Assuming LocalDateTime parsing logic

@@ -1,11 +1,8 @@
 package com.controllers;
 
 import java.io.IOException;
-
 import java.io.Serializable;
-
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -17,12 +14,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.models.Client;
 import com.models.Identifiable;
-import com.models.TelephoneMobile;
-import com.services.ClientService;
 import com.services.DataService;
-import com.services.TelephoneMobileService;
 import com.utils.Constants;
 import com.utils.DateUtils;
 import com.utils.ReflectionUtils;
@@ -30,20 +23,14 @@ import com.utils.StringUtils;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.LongProperty;
-import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
@@ -59,14 +46,14 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
-import javafx.beans.property.BooleanProperty;
 import javafx.util.Duration;
-import javafx.scene.control.Tooltip;
 
 public class TableController<T extends Identifiable<T, ?>, S extends DataService<T>> {
 
@@ -141,47 +128,27 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         for (TableColumn<T, ?> column : columns) {
             if (column.getId() != null && !column.getId().isEmpty()) {
                 String propertyName = column.getId();
-
-                String methodName = "get" +
-                        propertyName.substring(0, 1).toUpperCase() +
-                        propertyName.substring(1);
-                try {
-                    Method method = clazz.getDeclaredMethod(methodName);
-
-                    if (method.getReturnType() == LongProperty.class) {
-                        configureCellValueFactory((TableColumn<T, Long>) column, method);
-                    } else if (method.getReturnType() == ObjectProperty.class) {
-                        configureCellValueFactory((TableColumn<T, Object>) column, method);
-                    } else if (method.getReturnType() == IntegerProperty.class) {
-                        configureCellValueFactory((TableColumn<T, Integer>) column, method);
-                    } else {
-                        configureCellValueFactory((TableColumn<T, String>) column, method);
-                    }
-                } catch (NoSuchMethodException e) {
-                    e.printStackTrace();
-                }
+                configureCellValueFactory((TableColumn<T, String>) column, propertyName);
             }
         }
     }
 
     @SuppressWarnings("unchecked")
-    private <Col> void configureCellValueFactory(TableColumn<T, Col> column, Method method) {
+    private <Col> void configureCellValueFactory(TableColumn<T, Col> column, String propertyName) {
         column.setCellValueFactory(cellData -> {
-            try {
-                Object value = method.invoke(cellData.getValue());
+            T entity = cellData.getValue();
+            Object value = ReflectionUtils.invokeMethod(entity, "get" +
+                    StringUtils.capitalizeWord(propertyName),
+                    new Class[] {}, new Object[] {});
 
-                if (value instanceof ObservableValue) {
-                    return (ObservableValue<Col>) value;
-                } else if (value instanceof LocalDateTime) {
-                    return (ObservableValue<Col>) new SimpleStringProperty(
-                            DateUtils.getFormattedDate((LocalDateTime) value));
-                } else {
-                    return (ObservableValue<Col>) new SimpleStringProperty(value.toString());
-                }
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                e.printStackTrace();
+            if (value instanceof ObservableValue) {
+                return (ObservableValue<Col>) value;
+            } else if (value instanceof LocalDateTime) {
+                return (ObservableValue<Col>) new SimpleStringProperty(
+                        DateUtils.getFormattedDate((LocalDateTime) value));
+            } else {
+                return (ObservableValue<Col>) new SimpleStringProperty(value.toString());
             }
-            return null;
         });
     }
 
@@ -228,9 +195,10 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
 
             try {
                 Class<?> propertyType = ReflectionUtils.getPropertyType(clazz, columnName);
-                Method method = clazz.getDeclaredMethod("set" + columnName.substring(0, 1).toUpperCase() +
-                        columnName.substring(1), propertyType);
-                method.invoke(revertedRow, ReflectionUtils.convertToCorrectType(oldValue, propertyType));
+                Object convertedValue = ReflectionUtils.convertToCorrectType(oldValue, propertyType);
+
+                // Use the new setPropertyValue method
+                ReflectionUtils.setPropertyValue(revertedRow, columnName, convertedValue);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -247,19 +215,12 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
                 if (column.getId() != null && !column.getId().isEmpty()) {
                     String propertyName = column.getId();
 
-                    String getMethodName = "get" +
-                            propertyName.substring(0, 1).toUpperCase() +
-                            propertyName.substring(1);
+                    // Use the ReflectionUtils to get and set property values
+                    Object value = ReflectionUtils.invokeMethod(source, "get" +
+                            StringUtils.capitalizeWord(propertyName),
+                            new Class[] {}, new Object[] {});
 
-                    String setMethodName = "set" +
-                            propertyName.substring(0, 1).toUpperCase() +
-                            propertyName.substring(1);
-
-                    Method getMethod = clazz.getDeclaredMethod(getMethodName);
-                    Method setMethod = clazz.getDeclaredMethod(setMethodName, getMethod.getReturnType());
-
-                    Object value = getMethod.invoke(source);
-                    setMethod.invoke(copy, value);
+                    ReflectionUtils.setPropertyValue(copy, propertyName, value);
                 }
             }
 
@@ -310,9 +271,10 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
 
         try {
             Class<?> propertyType = ReflectionUtils.getPropertyType(clazz, propertyName);
-            Method method = clazz.getDeclaredMethod("set" + propertyName.substring(0, 1).toUpperCase() +
-                    propertyName.substring(1), propertyType);
-            method.invoke(entity, ReflectionUtils.convertToCorrectType(newValue, propertyType));
+
+            // Use ReflectionUtils to set property value
+            ReflectionUtils.setPropertyValue(entity, propertyName,
+                    ReflectionUtils.convertToCorrectType(newValue, propertyType));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -347,11 +309,8 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
                     updates.put(columnName, newValue);
                 }
 
-                if (service instanceof ClientService) {
-                    ((ClientService) service).modifier((Long) id, updates);
-                } else if (service instanceof TelephoneMobileService) {
-                    ((TelephoneMobileService) service).modifier((Long) id, updates);
-                }
+                service.modifier((Long) id, updates);
+
             } else {
                 int rowIndex = getRowIndex(id);
                 if (rowIndex != -1) {
@@ -374,11 +333,7 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
 
                 for (T selectedItem : selectedItems) {
                     Serializable id = selectedItem.getId();
-                    if (service instanceof ClientService) {
-                        ((ClientService) service).supprimer_par_id((Long) id);
-                    } else if (service instanceof TelephoneMobileService) {
-                        ((TelephoneMobileService) service).supprimer_par_id((Long) id);
-                    }
+                    service.supprimer_par_id((Long) id);
                 }
 
                 // Remove the selected items from the new modifiable list
@@ -465,14 +420,10 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
                 // build entity from Retrieved text fields values.
                 try {
                     T entity = buildEntityFromModalTextFields(content);
-                    if (service instanceof ClientService) {
-                        ((ClientService) service).enregistrer((Client) entity);
-                    } else if (service instanceof TelephoneMobileService) {
-
-                        ((TelephoneMobileService) service).enregistrer((TelephoneMobile) entity);
-                    }
+                    service.enregistrer(entity);
                 } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-                        | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+                        | InvocationTargetException | NoSuchMethodException | SecurityException
+                        | NoSuchFieldException e) {
                     e.printStackTrace();
                 }
                 refreshItems();
@@ -502,21 +453,17 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
     }
 
     private T buildEntityFromModalTextFields(Parent content) throws InstantiationException, IllegalAccessException,
-            IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+            IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException,
+            NoSuchFieldException {
         T entity = clazz.getDeclaredConstructor().newInstance();
 
         for (String column : editableColumns) {
             TextField textField = (TextField) content.lookup("#" + column);
             if (textField != null) {
                 String value = textField.getText();
-
                 Class<?> propertyType = ReflectionUtils.getPropertyType(clazz, column);
-                Method method;
-
-                method = clazz.getDeclaredMethod("set" + column.substring(0, 1).toUpperCase() +
-                        column.substring(1), propertyType);
-                method.invoke(entity, ReflectionUtils.convertToCorrectType(value, propertyType));
-
+                ReflectionUtils.setPropertyValue(entity, column,
+                        ReflectionUtils.convertToCorrectType(value, propertyType));
             }
         }
         return entity;

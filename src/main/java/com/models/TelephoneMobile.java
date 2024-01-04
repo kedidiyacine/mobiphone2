@@ -117,7 +117,7 @@ public class TelephoneMobile extends BaseArticle<TelephoneMobile> implements Tel
     }
 
     @Override
-    public int getQt_stock() {
+    public Integer getQt_stock() {
         return super.getQt_stock();
     }
 
@@ -157,7 +157,7 @@ public class TelephoneMobile extends BaseArticle<TelephoneMobile> implements Tel
     }
 
     @Override
-    public void setQt_stock(int qt_stock) {
+    public void setQt_stock(Integer qt_stock) {
         super.setQt_stock(qt_stock);
     }
 
