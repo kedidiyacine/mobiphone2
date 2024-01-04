@@ -39,8 +39,7 @@ public class ReflectionUtils {
 
         // If not found, use reflection to get the type from the declared methods
         try {
-            String getterMethodName = "get" + propertyName.substring(0, 1).toUpperCase() +
-                    propertyName.substring(1);
+            String getterMethodName = "get" + StringUtils.capitalizeWord(propertyName);
             Method getterMethod = clazz.getDeclaredMethod(getterMethodName);
             return getterMethod.getReturnType();
         } catch (NoSuchMethodException e) {
@@ -62,7 +61,7 @@ public class ReflectionUtils {
     public static void setPropertyValue(Object target, String propertyName, Object value) {
         try {
             Method method = target.getClass().getDeclaredMethod("set" +
-                    propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1),
+                    StringUtils.capitalizeWord(propertyName),
                     value.getClass());
             method.invoke(target, value);
         } catch (Exception e) {

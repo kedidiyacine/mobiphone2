@@ -62,15 +62,12 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
     private Button btnSave;
     private Button btnDelete;
     private Button btnRefresh;
-    private Button btnCreate;
-
     private ObservableList<T> entities = FXCollections.observableArrayList();
     private DataService<T> service;
     private final Set<String> editableColumns = new HashSet<>();
     private final Map<Serializable, Map<String, Map<String, String>>> modificationsMap = new HashMap<>();
     private final Class<T> clazz;
 
-    private Pane overlayPane = new Pane();
     private final Tooltip refreshTooltip = new Tooltip(Constants.REFRESH_TOOLTIP_MSG);
     private final BooleanProperty refreshing = new SimpleBooleanProperty(false);
     private final Timeline refreshThrottle = new Timeline(new KeyFrame(
@@ -94,7 +91,6 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         this.btnSave = actionButtons.getSaveButton();
         this.btnRefresh = actionButtons.getRefreshButton();
         this.btnDelete = actionButtons.getDeleteButton();
-        this.btnCreate = actionButtons.getCreateButton();
 
         actionButtons.getSaveButton().setOnAction(this::handleSaveButton);
         actionButtons.getDeleteButton().setOnAction(this::handleDeleteButton);
