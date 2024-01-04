@@ -1,21 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
 
 <VBox VBox.vgrow="ALWAYS" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-    fx:controller="com.controllers.CreateController"
 >
     <children>
         <HBox VBox.vgrow="ALWAYS" />
-
         <Label layoutX="126.0" layoutY="39.0" text="Modal Content" />
-        <Button layoutX="126.0" layoutY="95.0" mnemonicParsing="false"
-            onAction="#handleCreateButton"
-            text="Create" />
+        <VBox id="dynamicFieldsContainer"> <!-- Added VBox with ID dynamicFieldsContainer -->
+            <!-- Dynamic content will be added here -->
+        </VBox>
     </children>
-
 </VBox>

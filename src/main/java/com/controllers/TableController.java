@@ -41,7 +41,9 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
@@ -52,9 +54,11 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -432,57 +436,121 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
             FXMLLoader loader = new FXMLLoader(resourceUrl);
             Parent content = loader.load();
 
-            // // need to programatically create the modal content here
-            // if (service instanceof ClientService) {
-            // // createClientModal();
-            // Client client = new Client(); // fill with the modal's inputs
-            // ((ClientService) service).enregistrer(client);
-            // } else if (service instanceof TelephoneMobileService) {
-            // // createTelephoneModal();
-            // TelephoneMobile telephoneMobile = new TelephoneMobile(); // fill with the
-            // modal's inputs
-            // ((TelephoneMobileService) service).enregistrer(telephoneMobile);
-            // }
-
             content.setId(contentPath);
 
             Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 
-            overlayPane.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5);");
-            overlayPane.setMouseTransparent(true);
-            overlayPane.prefWidthProperty().bind(currentStage.getScene().widthProperty());
-            overlayPane.prefHeightProperty().bind(currentStage.getScene().heightProperty());
+            // Create overlayPane and update main scene
+            Pane overlayPane = createOverlayPane(currentStage);
 
-            Group rootGroup = new Group(currentStage.getScene().getRoot(), overlayPane);
-            Scene mainScene = new Scene(rootGroup);
-
-            currentStage.setScene(mainScene);
-
+            // Create a new stage for the modal
             Stage modalStage = new Stage();
             modalStage.initModality(Modality.APPLICATION_MODAL);
             modalStage.initOwner(currentStage);
-            modalStage.setTitle("Create Modal"); // customize depending on what entity we're creating
-            modalStage.setScene(new Scene(content));
+            modalStage.setTitle("Create Modal");
 
-            modalStage.setOnCloseRequest(e -> {
-                // Remove overlayPane when modal is closed
-                overlayPane.setVisible(false);
+            // Dynamically create modal fields
+            addModalFields(content);
+
+            // Create and add Save button
+            Button saveButton = new Button("Save");
+            VBox vbox = (VBox) content.lookup("#dynamicFieldsContainer");
+            if (vbox != null) {
+                vbox.getChildren().add(saveButton);
+            }
+
+            // Set up listener for Save button click
+            saveButton.setOnAction(saveEvent -> {
+                // TODO: validation
+                // build entity from Retrieved text fields values.
+                try {
+                    T entity = buildEntityFromModalTextFields(content);
+                    if (service instanceof ClientService) {
+                        ((ClientService) service).enregistrer((Client) entity);
+                    } else if (service instanceof TelephoneMobileService) {
+
+                        ((TelephoneMobileService) service).enregistrer((TelephoneMobile) entity);
+                    }
+                } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+                        | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+                    e.printStackTrace();
+                }
+                refreshItems();
+
+                // Close the modal
+                modalStage.close();
             });
+
+            // Set the content to the scene
+            Scene modalScene = new Scene(content);
+            modalStage.setScene(modalScene);
 
             // Add a listener to the showing property of the modal
             modalStage.showingProperty().addListener((observable, oldValue, newValue) -> {
                 overlayPane.setVisible(newValue);
             });
 
-            // could create witbutton YES or cancel and execute the operations depending on
-            // the pressed button
-            // or let the modalcontroller take care of it
-            // which will require sending the service from this controller to the modal's
-            // one
+            // Show the modal and wait for it to be closed
             modalStage.showAndWait();
+
+            // Remove overlayPane after modal is closed
+            overlayPane.setVisible(false);
 
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private T buildEntityFromModalTextFields(Parent content) throws InstantiationException, IllegalAccessException,
+            IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+        T entity = clazz.getDeclaredConstructor().newInstance();
+
+        for (String column : editableColumns) {
+            TextField textField = (TextField) content.lookup("#" + column);
+            if (textField != null) {
+                String value = textField.getText();
+
+                Class<?> propertyType = ReflectionUtils.getPropertyType(clazz, column);
+                Method method;
+
+                method = clazz.getDeclaredMethod("set" + column.substring(0, 1).toUpperCase() +
+                        column.substring(1), propertyType);
+                method.invoke(entity, ReflectionUtils.convertToCorrectType(value, propertyType));
+
+            }
+        }
+        return entity;
+    }
+
+    private Pane createOverlayPane(Stage currentStage) {
+        Pane overlayPane = new Pane();
+        overlayPane.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5);");
+        overlayPane.setMouseTransparent(true);
+        overlayPane.prefWidthProperty().bind(currentStage.getScene().widthProperty());
+        overlayPane.prefHeightProperty().bind(currentStage.getScene().heightProperty());
+
+        Group rootGroup = new Group(currentStage.getScene().getRoot(), overlayPane);
+        Scene mainScene = new Scene(rootGroup);
+        currentStage.setScene(mainScene);
+
+        return overlayPane;
+    }
+
+    private void addModalFields(Parent content) {
+        // Assuming editableColumns is a List<String> containing column names
+        for (String column : editableColumns) {
+            Label label = new Label(column);
+            TextField textField = new TextField();
+
+            // Assign ID to the TextField based on the column name
+            textField.setId(column);
+
+            // Add label and text field to content
+            VBox vbox = (VBox) content.lookup("#dynamicFieldsContainer");
+            if (vbox != null) {
+                HBox hbox = new HBox(label, textField);
+                vbox.getChildren().add(hbox);
+            }
         }
     }
 

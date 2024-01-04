@@ -23,6 +23,11 @@ public class ReflectionUtils {
         propertyTypeMap.put("reference", String.class); // Additional property in TelephoneMobile
         propertyTypeMap.put("marque", String.class); // Additional property in TelephoneMobile
         propertyTypeMap.put("modele", String.class); // Additional property in TelephoneMobile
+        propertyTypeMap.put("cin", String.class);
+        propertyTypeMap.put("nom", String.class);
+        propertyTypeMap.put("prenom", String.class);
+        propertyTypeMap.put("adresse_de_livraison", String.class);
+        propertyTypeMap.put("email", String.class);
     }
 
     public static Class<?> getPropertyType(Class<?> clazz, String propertyName) {

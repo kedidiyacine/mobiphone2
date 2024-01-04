@@ -58,7 +58,7 @@ public class Constants {
     public static final String INSERT_TYPE_SQL = "INSERT INTO %s (id_article, reference, marque, modele) VALUES (?, ?, ?, ?)";
 
     public static final String SELECT_ARTICLE_BY_ID_SQL = "SELECT * FROM %s INNER JOIN %s ON %s.id = %s.id_article WHERE %s.id = ?";
-    public static final String SELECT_ARTICLES_BY_PAGE_SQL = "SELECT * FROM %s INNER JOIN %s ON %s.id = %s.id_article ORDER BY %s.id LIMIT ? OFFSET ?";
+    public static final String SELECT_ARTICLES_BY_PAGE_SQL = "SELECT * FROM %s INNER JOIN %s ON %s.id = %s.id_article ORDER BY %s.date_maj DESC LIMIT ? OFFSET ?";
 
     public static final List<String> ARTICLE_COLUMNS = Arrays.asList("id", "type", "libelle", "prix_vente", "qt_stock",
             "date_creation", "date_maj");

@@ -92,7 +92,7 @@ public class ClientDAO implements ClientRepertoire {
     @Override
     public List<Client> trouver_par_page(int page, int items_count) {
         List<Client> clients = new ArrayList<>();
-        String sql = "SELECT * FROM client ORDER BY id LIMIT ? OFFSET ?";
+        String sql = "SELECT * FROM client ORDER BY date_maj DESC LIMIT ? OFFSET ?";
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setInt(1, items_count);

@@ -11,6 +11,7 @@ public class TelephoneMobile extends BaseArticle<TelephoneMobile> implements Tel
     private final StringProperty modele = new SimpleStringProperty();
 
     public TelephoneMobile() {
+        setType("telephone mobile");
     }
 
     public TelephoneMobile(Long id, String libelle, Double prix_vente, int qt_stock, String reference,
