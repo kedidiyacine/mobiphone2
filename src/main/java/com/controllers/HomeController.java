@@ -7,6 +7,7 @@ import java.util.ResourceBundle;
 import com.MainApp;
 import com.services.AuthService;
 import com.utils.Constants;
+import com.utils.Constants.KEY;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -15,12 +16,16 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.Label;
 
 public class HomeController implements Initializable, ControllersWithAuth {
     private AuthService auth;
 
     @FXML
     private TabPane tabPane;
+
+    @FXML
+    private Label login;
 
     @FXML
     private void openClientsTab(ActionEvent event) {
@@ -82,12 +87,7 @@ public class HomeController implements Initializable, ControllersWithAuth {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Session useSession = auth.getSession();
-        // if (useSession != null) {
-        // System.out.println(
-        // "Hello Mr." + useSession.getCompte().getLogin() + " our beloved " +
-        // useSession.getCompte().getRole());
-        // }
+        login.setText("Hello " + auth.getCredentials().get(KEY.LOGIN));
     }
 
     @Override

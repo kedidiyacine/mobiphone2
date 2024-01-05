@@ -10,6 +10,7 @@
     <HBox>
         <!-- Sidebar with hyperlinks -->
         <VBox style="-fx-background-color: lightgray; padding: 10px;">
+            <Label fx:id="login" />
             <Hyperlink text="Clients" onAction="#openClientsTab" />
             <Hyperlink text="Commandes" onAction="#openCommandesTab" />
             <Hyperlink text="Articles" onAction="#openArticlesTab" />

@@ -23,6 +23,12 @@ public class Constants {
 
     public static final String CREATION_MODAL_CONTENT_PATH = "/fxml/agent-commercial/create.fxml";
 
+    // Session
+    public static final String SESSION_FILE_PATH = ".session.ser";
+    public static final String SECRET_KEY = "23A59E7BFB78CA40E1155839E3800930";
+    public static final String CIPHER_ALGORITHM = "AES/ECB/PKCS5Padding";
+    public static final int SESSION_DURATION_MINUTES = 60 * 24 * 365; // Adjust as needed
+
     //
     public static final String DATE_TIME_FORMAT_PATTERN = "yyyy-MM-dd HH:mm:ss";
 

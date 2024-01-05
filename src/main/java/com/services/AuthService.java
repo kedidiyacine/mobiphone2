@@ -1,6 +1,7 @@
 package com.services;
 
 import java.io.EOFException;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -29,6 +30,7 @@ import com.models.Compte;
 import com.models.Session;
 import com.services.DAOs.compte.CompteDAO;
 import com.services.DAOs.session.SessionDAO;
+import com.utils.Constants;
 import com.utils.Constants.KEY;
 
 public class AuthService implements AutoCloseable {
@@ -40,10 +42,6 @@ public class AuthService implements AutoCloseable {
     private Compte compteAuthentifie;
 
     private Map<KEY, String> credentials;
-    private static final String SESSION_FILE_PATH = "session.ser";
-    private static final String SECRET_KEY = "23A59E7BFB78CA40E1155839E3800930";
-    private static final String CIPHER_ALGORITHM = "AES/ECB/PKCS5Padding";
-    private static final int SESSION_DURATION_MINUTES = 60 * 24 * 365; // Adjust as needed
 
     public AuthService() throws SQLException {
         this.connection = DatabaseUtil.getConnection();
@@ -68,8 +66,7 @@ public class AuthService implements AutoCloseable {
         return null;
     }
 
-    public void loadCredentials(Long id) {
-        compteAuthentifie = compteDAO.trouver_par_id(id);
+    public void loadCredentials() {
         Map<KEY, String> credentials = new HashMap<>();
         credentials.put(KEY.LOGIN, compteAuthentifie.getLogin());
         credentials.put(KEY.PASSWORD, compteAuthentifie.getMot_de_passe());
@@ -81,17 +78,19 @@ public class AuthService implements AutoCloseable {
     public Session getSession() {
         if (sessionAutentifie == null) {
             sessionAutentifie = loadSessionData();
+
             if (sessionAutentifie != null) {
-                loadCredentials(sessionAutentifie.getCompte_id());
                 compteAuthentifie = compteDAO.trouver_par_id(sessionAutentifie.getCompte_id());
-                sessionAutentifie = sessionDAO.trouver_par_compte_id(compteAuthentifie.getId());
-                if (isSessionExpired(sessionAutentifie)) {
-                    // // Refresh the session if it's expired
-                    sessionAutentifie = sessionDAO.refreshSession(compteAuthentifie.getId());
-                    saveSessionData(sessionAutentifie.getCompte_id(),
-                            sessionAutentifie.getDate_debut());
+
+                if (compteAuthentifie != null) {
+                    loadCredentials();
+                    sessionAutentifie = sessionDAO.trouver_par_compte_id(compteAuthentifie.getId());
+
+                    if (isSessionExpired(sessionAutentifie)) {
+                        sessionAutentifie = sessionDAO.refreshSession(compteAuthentifie.getId());
+                        saveSessionData(sessionAutentifie.getCompte_id(), sessionAutentifie.getDate_debut());
+                    }
                 }
-                return sessionAutentifie;
             }
         }
 
@@ -157,21 +156,21 @@ public class AuthService implements AutoCloseable {
         Timestamp sessionStart = session.getDate_debut();
 
         long elapsedTimeInMillis = now.getTime() - sessionStart.getTime();
-        long sessionDurationInMillis = SESSION_DURATION_MINUTES * 60 * 1000;
+        long sessionDurationInMillis = Constants.SESSION_DURATION_MINUTES * 60 * 1000;
 
         return elapsedTimeInMillis > sessionDurationInMillis;
     }
 
     // Load session data from file
     private Session loadSessionData() {
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(SESSION_FILE_PATH))) {
-            Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
-            cipher.init(Cipher.DECRYPT_MODE, generateSecretKey(SECRET_KEY));
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(Constants.SESSION_FILE_PATH))) {
+            Cipher cipher = Cipher.getInstance(Constants.CIPHER_ALGORITHM);
+            cipher.init(Cipher.DECRYPT_MODE, generateSecretKey(Constants.SECRET_KEY));
             SealedObject sealedObject = (SealedObject) ois.readObject();
             return (Session) sealedObject.getObject(cipher);
         } catch (FileNotFoundException e) {
             // No previous session data
-            System.err.println("FileNotFoundException: File not found at path: " + SESSION_FILE_PATH);
+            System.err.println("FileNotFoundException: File not found at path: " + Constants.SESSION_FILE_PATH);
             return null;
         } catch (EOFException e) {
             // End of file reached unexpectedly
@@ -181,7 +180,7 @@ public class AuthService implements AutoCloseable {
         } catch (IOException | ClassNotFoundException | NoSuchAlgorithmException | NoSuchPaddingException
                 | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
             // Handle other errors
-            System.err.println("Error loading session data from file: " + SESSION_FILE_PATH);
+            System.err.println("Error loading session data from file: " + Constants.SESSION_FILE_PATH);
             // e.printStackTrace();
             return null;
         }
@@ -189,11 +188,19 @@ public class AuthService implements AutoCloseable {
 
     // Save session data to file
     private void saveSessionData(Long accountId, Timestamp date_debut) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(SESSION_FILE_PATH))) {
-            Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
-            cipher.init(Cipher.ENCRYPT_MODE, generateSecretKey(SECRET_KEY));
-            SealedObject sealedObject = new SealedObject(new Session(accountId, date_debut), cipher);
-            oos.writeObject(sealedObject);
+        try {
+            // Check if the file exists, and create it if not
+            File sessionFile = new File(Constants.SESSION_FILE_PATH);
+            if (!sessionFile.exists()) {
+                sessionFile.createNewFile();
+            }
+
+            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(sessionFile))) {
+                Cipher cipher = Cipher.getInstance(Constants.CIPHER_ALGORITHM);
+                cipher.init(Cipher.ENCRYPT_MODE, generateSecretKey(Constants.SECRET_KEY));
+                SealedObject sealedObject = new SealedObject(new Session(accountId, date_debut), cipher);
+                oos.writeObject(sealedObject);
+            }
         } catch (IOException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException
                 | IllegalBlockSizeException e) {
             // Handle errors in saving session data
@@ -202,10 +209,10 @@ public class AuthService implements AutoCloseable {
     }
 
     public void emptySessionData() {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(SESSION_FILE_PATH))) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(Constants.SESSION_FILE_PATH))) {
             // Write an empty SealedObject to the file
-            Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
-            cipher.init(Cipher.ENCRYPT_MODE, generateSecretKey(SECRET_KEY));
+            Cipher cipher = Cipher.getInstance(Constants.CIPHER_ALGORITHM);
+            cipher.init(Cipher.ENCRYPT_MODE, generateSecretKey(Constants.SECRET_KEY));
             SealedObject sealedObject = new SealedObject(null, cipher);
             oos.writeObject(sealedObject);
         } catch (IOException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException
