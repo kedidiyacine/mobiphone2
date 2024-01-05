@@ -21,6 +21,8 @@ public class Constants {
     public static final int MIN_WIDTH = 960;
     public static final int MIN_HEIGHT = 600;
 
+    public static final String CREATION_MODAL_CONTENT_PATH = "/fxml/agent-commercial/create.fxml";
+
     //
     public static final String DATE_TIME_FORMAT_PATTERN = "yyyy-MM-dd HH:mm:ss";
 

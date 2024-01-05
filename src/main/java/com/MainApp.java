@@ -2,11 +2,9 @@ package com;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.sql.Connection;
 import java.sql.SQLException;
 
 import com.controllers.ControllersWithAuth;
-import com.db.DatabaseUtil;
 import com.services.AuthService;
 import com.utils.Constants;
 
@@ -25,9 +23,11 @@ public class MainApp extends Application {
     public void start(@SuppressWarnings("exports") Stage s) throws IOException {
         stage = s;
         try {
-            Connection connection = DatabaseUtil.getConnection();
-            auth = new AuthService(connection);
-            setRoot(Constants.AUTH_FXML);
+            auth = new AuthService();
+            if (auth.getSession() != null)
+                setRoot("home");
+            else
+                setRoot(Constants.AUTH_FXML);
         } catch (SQLException e) {
             e.printStackTrace();
         }

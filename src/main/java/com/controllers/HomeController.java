@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-import com.models.Session;
+import com.MainApp;
 import com.services.AuthService;
 import com.utils.Constants;
 
@@ -35,6 +35,12 @@ public class HomeController implements Initializable, ControllersWithAuth {
     @FXML
     private void openArticlesTab(ActionEvent event) {
         openTab(Constants.ARTICLES_TAB_TITLE, Constants.ARTICLES_TAB_CONTENT_PATH);
+    }
+
+    @FXML
+    private void signOut(ActionEvent event) throws IOException {
+        auth.signOut();
+        MainApp.setRoot(Constants.AUTH_FXML, "authentification");
     }
 
     private void openTab(String tabText, String contentPath) {
@@ -76,12 +82,12 @@ public class HomeController implements Initializable, ControllersWithAuth {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        Session useSession = auth.getSession();
-        if (useSession != null) {
-            System.out.println(
-                    "Hello Mr." + useSession.getCompte().getLogin() + " our beloved " +
-                            useSession.getCompte().getRole());
-        }
+        // Session useSession = auth.getSession();
+        // if (useSession != null) {
+        // System.out.println(
+        // "Hello Mr." + useSession.getCompte().getLogin() + " our beloved " +
+        // useSession.getCompte().getRole());
+        // }
     }
 
     @Override

@@ -104,15 +104,31 @@ public class SessionDAO implements SessionRepertoire {
         return null;
     }
 
+    // Refresh the session duration in the database
+    public Session refreshSession(Long accountId) {
+        try {
+            String sql = "UPDATE session SET date_debut = CURRENT_TIMESTAMP WHERE compte_id = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setLong(1, accountId);
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle database errors
+        }
+
+        return trouver_par_compte_id(accountId);
+    }
+
     private Session mapResultSetToSession(ResultSet resultSet) throws SQLException {
         return new Session(
                 resultSet.getLong("id"),
                 resultSet.getLong("compte_id"),
-                resultSet.getTimestamp("date_debut").toLocalDateTime());
+                resultSet.getTimestamp("date_debut"));
     }
 
     private void prepareSessionStatements(PreparedStatement preparedStatement, Session session) throws SQLException {
-        preparedStatement.setLong(1, session.getcompte_id());
+        preparedStatement.setLong(1, session.getCompte_id());
     }
 
     @Override

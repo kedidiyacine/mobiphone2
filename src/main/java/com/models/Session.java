@@ -1,17 +1,18 @@
 package com.models;
 
-import java.time.LocalDateTime;
+import java.io.Serializable;
+import java.sql.Timestamp;
 
-public class Session {
+public class Session implements Serializable {
     private Long id;
     private Long compte_id;
     private Compte compte;
-    private LocalDateTime date_creation;
+    private Timestamp date_debut;
 
-    public Session(Long id, Long compte_id, LocalDateTime date_creation) {
+    public Session(Long id, Long compte_id, Timestamp date_debut) {
         this.id = id;
         this.compte_id = compte_id;
-        this.date_creation = date_creation;
+        this.date_debut = date_debut;
     }
 
     public Session(Compte compte) {
@@ -24,9 +25,9 @@ public class Session {
         this.compte_id = compte_id;
     }
 
-    public Session(Long compte_id, LocalDateTime date_creation) {
+    public Session(Long compte_id, Timestamp date_debut) {
         this.compte_id = compte_id;
-        this.date_creation = date_creation;
+        this.date_debut = date_debut;
     }
 
     public Session(Long compte_id) {
@@ -41,28 +42,20 @@ public class Session {
         this.id = id;
     }
 
-    public Long getcompte_id() {
-        return compte_id;
-    }
-
-    public void setcompte_id(Long compte_id) {
-        this.compte_id = compte_id;
-    }
-
-    public LocalDateTime getDate_creation() {
-        return date_creation;
-    }
-
-    public void setDate_creation(LocalDateTime date_creation) {
-        this.date_creation = date_creation;
-    }
-
     public Long getCompte_id() {
         return compte_id;
     }
 
     public void setCompte_id(Long compte_id) {
         this.compte_id = compte_id;
+    }
+
+    public Timestamp getDate_debut() {
+        return date_debut;
+    }
+
+    public void setdate_debut(Timestamp date_debut) {
+        this.date_debut = date_debut;
     }
 
     public Compte getCompte() {
@@ -72,5 +65,4 @@ public class Session {
     public void setCompte(Compte compte) {
         this.compte = compte;
     }
-
 }

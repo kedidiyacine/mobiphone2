@@ -13,6 +13,8 @@
             <Hyperlink text="Clients" onAction="#openClientsTab" />
             <Hyperlink text="Commandes" onAction="#openCommandesTab" />
             <Hyperlink text="Articles" onAction="#openArticlesTab" />
+            <Hyperlink text="Logout" onAction="#signOut" />
+
             <!-- Add more hyperlinks as needed -->
         </VBox>
 

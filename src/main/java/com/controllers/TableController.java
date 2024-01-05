@@ -91,6 +91,7 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         this.btnSave = actionButtons.getSaveButton();
         this.btnRefresh = actionButtons.getRefreshButton();
         this.btnDelete = actionButtons.getDeleteButton();
+        actionButtons.getCreateButton();
 
         actionButtons.getSaveButton().setOnAction(this::handleSaveButton);
         actionButtons.getDeleteButton().setOnAction(this::handleDeleteButton);
@@ -377,7 +378,7 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
     @FXML
     public void handleCreateButton(ActionEvent event) {
         try {
-            String contentPath = "/fxml/agent-commercial/create.fxml";
+            String contentPath = Constants.CREATION_MODAL_CONTENT_PATH;
             URL resourceUrl = getClass().getResource(contentPath);
             if (resourceUrl == null) {
                 System.err.println("FXML file not found: " + contentPath);
@@ -398,7 +399,8 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
             Stage modalStage = new Stage();
             modalStage.initModality(Modality.APPLICATION_MODAL);
             modalStage.initOwner(currentStage);
-            modalStage.setTitle("Create Modal");
+            String TITLE = "Create " + clazz.getSimpleName();
+            modalStage.setTitle(TITLE);
 
             // Dynamically create modal fields
             addModalFields(content);
