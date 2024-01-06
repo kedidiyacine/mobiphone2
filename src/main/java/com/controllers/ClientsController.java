@@ -35,24 +35,10 @@ public class ClientsController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         try {
-
-            // Client client;
-            // try (ClientService clientService = new ClientService()) {
-            // for (int i = 0; i < 500; i++) {
-            // client = new Client(i + "cin", i + "nom", i + "prenom", i + "adresse", i +
-            // "email");
-            // clientService.enregistrer(client);
-            // }
-            // } catch (SQLException e) {
-            // throw e;
-            // } catch (Exception e) {
-            // e.printStackTrace();
-            // }
-
-            new TableController<Client, ClientService>(
-                    tblClients,
-                    Client.class, new ClientService(), new ActionButtons(btnSave, btnDelete, btnRefresh, btnCreate));
-            // buttons will eventually be packaged in some data structure
+            new TableController<Client, ClientService>(tblClients,
+                    Client.class,
+                    new ClientService(),
+                    new ActionButtons(btnSave, btnDelete, btnRefresh, btnCreate));
         } catch (SQLException e) {
             e.printStackTrace();
         }

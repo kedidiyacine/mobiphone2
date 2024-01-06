@@ -14,15 +14,16 @@
     <!-- Add your articles-related UI elements here -->
     <children>
         <!-- Remove the empty HBox or add appropriate content -->
-        <!-- <HBox VBox.vgrow="ALWAYS" /> -->
-        <Button fx:id="btnRefresh" text="Refresh" />
-        <Button fx:id="btnSave" text="Save" />
-        <Button fx:id="btnCreate" text="Create" />
-        <Button fx:id="btnDelete" text="Delete" />
-        <Label layoutX="60.0" layoutY="203.0" text="Type of article:" />
-        <ComboBox fx:id="cmbArticleType" layoutX="150.0" layoutY="191.0" prefHeight="26.0"
-            prefWidth="190.0" promptText="Choose Article Type" onAction="#handleArticleTypeChange" />
-
+        <HBox>
+            <Button fx:id="btnRefresh" text="Refresh" />
+            <Button fx:id="btnSave" text="Save" />
+            <Button fx:id="btnCreate" text="Create" />
+            <Button fx:id="btnDelete" text="Delete" />
+            <Label layoutX="60.0" layoutY="203.0" text="Type of article:" />
+            <ComboBox fx:id="cmbArticleType" layoutX="150.0" layoutY="191.0" prefHeight="26.0"
+                prefWidth="190.0" promptText="Choose Article Type"
+                onAction="#handleArticleTypeChange" />
+        </HBox>
 
         <TableView fx:id="tblArticles" HBox.hgrow="ALWAYS">
             <columns>
@@ -36,9 +37,6 @@
                 <TableColumn fx:id="date_creation" prefWidth="200.0" text="Date Creation" />
                 <TableColumn fx:id="date_maj" prefWidth="200.0" text="Date Maj" />
             </columns>
-            <padding>
-                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-            </padding>
         </TableView>
     </children>
 </VBox>

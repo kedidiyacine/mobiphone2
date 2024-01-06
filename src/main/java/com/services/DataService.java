@@ -11,4 +11,8 @@ public interface DataService<T> {
     T modifier(Long id, Map<String, Object> updates);
 
     void supprimer_par_id(Long id);
+
+    int count();
+
+    List<T> trouver_tout();
 }

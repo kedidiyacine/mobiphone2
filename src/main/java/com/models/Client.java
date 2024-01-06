@@ -42,6 +42,41 @@ public class Client implements Identifiable<Client, Long> {
         setEmail(email);
     }
 
+    // Getters and setters for JavaFX properties
+
+    public LongProperty idProperty() {
+        return id;
+    }
+
+    public StringProperty cinProperty() {
+        return cin;
+    }
+
+    public StringProperty nomProperty() {
+        return nom;
+    }
+
+    public StringProperty prenomProperty() {
+        return prenom;
+    }
+
+    public StringProperty adresse_de_livraisonProperty() {
+        return adresse_de_livraison;
+    }
+
+    public StringProperty emailProperty() {
+        return email;
+    }
+
+    public ObjectProperty<LocalDateTime> date_creationProperty() {
+        return date_creation;
+    }
+
+    public ObjectProperty<LocalDateTime> date_majProperty() {
+        return date_maj;
+    }
+
+    // Getters and setters
     @Override
     public Long getId() {
         return id.get();
@@ -49,10 +84,6 @@ public class Client implements Identifiable<Client, Long> {
 
     public void setId(Long id) {
         this.id.set(id);
-    }
-
-    public LongProperty idProperty() {
-        return id;
     }
 
     public String getCin() {
@@ -63,20 +94,12 @@ public class Client implements Identifiable<Client, Long> {
         this.cin.set(cin);
     }
 
-    public StringProperty cinProperty() {
-        return cin;
-    }
-
     public String getNom() {
         return nom.get();
     }
 
     public void setNom(String nom) {
         this.nom.set(nom);
-    }
-
-    public StringProperty nomProperty() {
-        return nom;
     }
 
     public String getPrenom() {
@@ -87,20 +110,12 @@ public class Client implements Identifiable<Client, Long> {
         this.prenom.set(prenom);
     }
 
-    public StringProperty prenomProperty() {
-        return prenom;
-    }
-
     public String getAdresse_de_livraison() {
         return adresse_de_livraison.get();
     }
 
     public void setAdresse_de_livraison(String adresse_de_livraison) {
         this.adresse_de_livraison.set(adresse_de_livraison);
-    }
-
-    public StringProperty adresse_de_livraisonProperty() {
-        return adresse_de_livraison;
     }
 
     public String getEmail() {
@@ -111,20 +126,12 @@ public class Client implements Identifiable<Client, Long> {
         this.email.set(email);
     }
 
-    public StringProperty emailProperty() {
-        return email;
-    }
-
     public LocalDateTime getDate_creation() {
         return date_creation.get();
     }
 
     public void setDate_creation(LocalDateTime date_creation) {
         this.date_creation.set(date_creation);
-    }
-
-    public ObjectProperty<LocalDateTime> date_creationProperty() {
-        return date_creation;
     }
 
     public LocalDateTime getDate_maj() {
@@ -135,7 +142,4 @@ public class Client implements Identifiable<Client, Long> {
         this.date_maj.set(date_maj);
     }
 
-    public ObjectProperty<LocalDateTime> date_majProperty() {
-        return date_maj;
-    }
 }

@@ -54,7 +54,7 @@ public class Session implements Serializable {
         return date_debut;
     }
 
-    public void setdate_debut(Timestamp date_debut) {
+    public void setDate_debut(Timestamp date_debut) {
         this.date_debut = date_debut;
     }
 

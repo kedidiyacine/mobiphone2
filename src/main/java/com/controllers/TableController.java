@@ -25,6 +25,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -42,6 +43,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.scene.control.Pagination;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -50,6 +52,7 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -63,10 +66,16 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
     private Button btnDelete;
     private Button btnRefresh;
     private ObservableList<T> entities = FXCollections.observableArrayList();
+    private ObservableList<T> entitiesForCurrentPage = FXCollections.observableArrayList();
     private DataService<T> service;
     private final Set<String> editableColumns = new HashSet<>();
     private final Map<Serializable, Map<String, Map<String, String>>> modificationsMap = new HashMap<>();
     private final Class<T> clazz;
+
+    private Pagination pagination;
+    ReflectionUtils<T> reflectionUtils = new ReflectionUtils<>();
+
+    private final int itemsPerPage = Constants.DEFAULT_ITEMS_PER_PAGE;
 
     private final Tooltip refreshTooltip = new Tooltip(Constants.REFRESH_TOOLTIP_MSG);
     private final BooleanProperty refreshing = new SimpleBooleanProperty(false);
@@ -118,14 +127,13 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void instructColumnCellsPopulation() {
         List<TableColumn<T, ?>> columns = getColumns();
 
         for (TableColumn<T, ?> column : columns) {
             if (column.getId() != null && !column.getId().isEmpty()) {
                 String propertyName = column.getId();
-                configureCellValueFactory((TableColumn<T, String>) column, propertyName);
+                configureCellValueFactory(column, propertyName);
             }
         }
     }
@@ -134,12 +142,12 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
     private <Col> void configureCellValueFactory(TableColumn<T, Col> column, String propertyName) {
         column.setCellValueFactory(cellData -> {
             T entity = cellData.getValue();
-            Object value = ReflectionUtils.invokeMethod(entity, "get" +
+            Object value = reflectionUtils.invokeMethod(entity, "get" +
                     StringUtils.capitalizeWord(propertyName),
                     new Class[] {}, new Object[] {});
 
-            if (value instanceof ObservableValue) {
-                return (ObservableValue<Col>) value;
+            if (value instanceof Long) {
+                return (ObservableValue<Col>) new SimpleLongProperty(Long.parseLong(value.toString()));
             } else if (value instanceof LocalDateTime) {
                 return (ObservableValue<Col>) new SimpleStringProperty(
                         DateUtils.getFormattedDate((LocalDateTime) value));
@@ -191,11 +199,11 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
             String oldValue = columnEntry.getValue().get("old");
 
             try {
-                Class<?> propertyType = ReflectionUtils.getPropertyType(clazz, columnName);
-                Object convertedValue = ReflectionUtils.convertToCorrectType(oldValue, propertyType);
+                Class<?> propertyType = reflectionUtils.getPropertyType(clazz, columnName);
+                Object convertedValue = reflectionUtils.convertToCorrectType(oldValue, propertyType);
 
                 // Use the new setPropertyValue method
-                ReflectionUtils.setPropertyValue(revertedRow, columnName, convertedValue);
+                reflectionUtils.setPropertyValue(revertedRow, columnName, convertedValue);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -213,11 +221,11 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
                     String propertyName = column.getId();
 
                     // Use the ReflectionUtils to get and set property values
-                    Object value = ReflectionUtils.invokeMethod(source, "get" +
+                    Object value = reflectionUtils.invokeMethod(source, "get" +
                             StringUtils.capitalizeWord(propertyName),
                             new Class[] {}, new Object[] {});
 
-                    ReflectionUtils.setPropertyValue(copy, propertyName, value);
+                    reflectionUtils.setPropertyValue(copy, propertyName, value);
                 }
             }
 
@@ -267,11 +275,11 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         addToModificationsMap(entityId, propertyName, oldValue, newValue);
 
         try {
-            Class<?> propertyType = ReflectionUtils.getPropertyType(clazz, propertyName);
+            Class<?> propertyType = reflectionUtils.getPropertyType(clazz, propertyName);
 
             // Use ReflectionUtils to set property value
-            ReflectionUtils.setPropertyValue(entity, propertyName,
-                    ReflectionUtils.convertToCorrectType(newValue, propertyType));
+            reflectionUtils.setPropertyValue(entity, propertyName,
+                    reflectionUtils.convertToCorrectType(newValue, propertyType));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -352,10 +360,20 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         tableView.setItems(FXCollections.observableArrayList());
 
         // Update the entities list using setAll
+        // entities = FXCollections.observableArrayList(
+        // service.getAllByPage(pagination.getCurrentPageIndex() + 1, itemsPerPage));
         entities = FXCollections.observableArrayList(
-                service.getAllByPage(Constants.DEFAULT_INITIAL_PAGE, Constants.DEFAULT_ITEMS_PER_PAGE));
+                service.trouver_tout());
+
         // Set a new modifiable ObservableList to the tableView
-        tableView.setItems(entities);
+        // tableView.setItems(entities);
+        int fromIndex = pagination.getCurrentPageIndex() * itemsPerPage;
+        int toIndex = Math.min(fromIndex + itemsPerPage, entities.size());
+
+        // Update the total number of items and recalculate the number of pages
+        entitiesForCurrentPage = FXCollections.observableArrayList(entities.subList(fromIndex, toIndex));
+        tableView.setItems(entitiesForCurrentPage);
+        pagination.setPageCount(calculatePageCount());
 
     }
 
@@ -459,9 +477,9 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
             TextField textField = (TextField) content.lookup("#" + column);
             if (textField != null) {
                 String value = textField.getText();
-                Class<?> propertyType = ReflectionUtils.getPropertyType(clazz, column);
-                ReflectionUtils.setPropertyValue(entity, column,
-                        ReflectionUtils.convertToCorrectType(value, propertyType));
+                Class<?> propertyType = reflectionUtils.getPropertyType(clazz, column);
+                reflectionUtils.setPropertyValue(entity, column,
+                        reflectionUtils.convertToCorrectType(value, propertyType));
             }
         }
         return entity;
@@ -499,21 +517,74 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         }
     }
 
+    private int calculatePageCountFromSource() {
+        int totalItems = service.count();
+        return (totalItems + itemsPerPage - 1) / itemsPerPage;
+    }
+
+    private int calculatePageCount() {
+        return Math.floorDiv((entities.size() + itemsPerPage - 1), itemsPerPage);
+    }
+
+    private Node createPage(int pageIndex) {
+        // entities = FXCollections.observableArrayList(
+        // service.getAllByPage(pageIndex, itemsPerPage));
+
+        entities = FXCollections.observableArrayList(
+                service.trouver_tout());
+
+        int pageCount = calculatePageCount();
+
+        pagination.setPageCount(pageCount);
+
+        int fromIndex = pageIndex * itemsPerPage;
+        int toIndex = Math.min(fromIndex + itemsPerPage, entities.size());
+
+        // tableView.getItems().setAll(entities);
+        entitiesForCurrentPage = FXCollections.observableArrayList(entities.subList(fromIndex, toIndex));
+        tableView.getItems().setAll(entitiesForCurrentPage);
+
+        return tableView;
+    }
+
     public void initialize() {
         initializeEditableColumns();
         instructColumnCellsPopulation();
         makeColumnsEditable();
         setOnEditCommitHandlersForColumns();
 
+        int numberOfPages = calculatePageCountFromSource();
+
+        if (numberOfPages > 0) {
+            // Create and configure Pagination
+            pagination = new Pagination(numberOfPages, 0);
+            pagination.setPageFactory(pageIndex -> createPage(pageIndex));
+            // Get the parent of the TableView (VBox)
+            Parent parent = tableView.getParent();
+
+            // Traverse up the hierarchy until you find the VBox
+            while (parent != null && !(parent instanceof VBox)) {
+                parent = parent.getParent();
+            }
+
+            if (parent instanceof VBox) {
+                // Add the Pagination control to the VBox
+                VBox.setVgrow(pagination, Priority.ALWAYS);
+                ((VBox) parent).getChildren().add(pagination);
+            }
+
+        }
+
         // Populate entities list before hydrating the table view
-        entities = FXCollections.observableArrayList(
-                service.getAllByPage(Constants.DEFAULT_INITIAL_PAGE, Constants.DEFAULT_ITEMS_PER_PAGE));
+        // entities = FXCollections.observableArrayList(
+        // service.getAllByPage(pagination.getCurrentPageIndex(),
+        // Constants.DEFAULT_ITEMS_PER_PAGE));
 
         entities.addListener((ListChangeListener.Change<? extends T> change) -> {
             while (change.next()) {
                 if (change.wasAdded() || change.wasRemoved()) {
                     // Check if the size is below 10
-                    if (entities.size() < Constants.DEFAULT_ITEMS_PER_PAGE) {
+                    if (entities.size() < itemsPerPage) {
                         // Call refreshItems
                         refreshItems();
                     }
@@ -521,7 +592,7 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
             }
         });
 
-        tableView.getItems().addAll(entities);
+        // tableView.getItems().addAll(entities);
         tableView.setEditable(true);
         tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 

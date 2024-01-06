@@ -19,8 +19,8 @@ public abstract class BaseArticle<T> implements Article, Identifiable<T, Long> {
     protected final StringProperty libelle = new SimpleStringProperty();
     protected final DoubleProperty prix_vente = new SimpleDoubleProperty();
     protected final IntegerProperty qt_stock = new SimpleIntegerProperty();
-    protected final ObjectProperty<LocalDateTime> date_creation = new SimpleObjectProperty<>();
-    protected final ObjectProperty<LocalDateTime> date_maj = new SimpleObjectProperty<>();
+    protected final ObjectProperty<LocalDateTime> date_creation = new SimpleObjectProperty<LocalDateTime>();
+    protected final ObjectProperty<LocalDateTime> date_maj = new SimpleObjectProperty<LocalDateTime>();
 
     protected BaseArticle() {
     }
@@ -84,38 +84,54 @@ public abstract class BaseArticle<T> implements Article, Identifiable<T, Long> {
     }
 
     // Getters and setters for JavaFX properties
-
-    public String getType() {
-        return type.get();
-    }
-
     public StringProperty typeProperty() {
         return type;
-    }
-
-    public void setType(String type) {
-        this.type.set(type);
-    }
-
-    @Override
-    public Long getId() {
-        return id.get();
     }
 
     public LongProperty idProperty() {
         return id;
     }
 
+    public StringProperty libelleProperty() {
+        return libelle;
+    }
+
+    public DoubleProperty prix_venteProperty() {
+        return prix_vente;
+    }
+
+    public IntegerProperty qt_stockProperty() {
+        return qt_stock;
+    }
+
+    public ObjectProperty<LocalDateTime> date_creationProperty() {
+        return date_creation;
+    }
+
+    public ObjectProperty<LocalDateTime> date_majProperty() {
+        return date_maj;
+    }
+
+    // Getters and Setters
+
+    public Long getId() {
+        return id.get();
+    }
+
     public void setId(Long id) {
         this.id.set(id);
     }
 
-    public String getLibelle() {
-        return libelle.get();
+    public String getType() {
+        return type.get();
     }
 
-    public StringProperty libelleProperty() {
-        return libelle;
+    public void setType(String type) {
+        this.type.set(type);
+    }
+
+    public String getLibelle() {
+        return libelle.get();
     }
 
     public void setLibelle(String libelle) {
@@ -126,20 +142,12 @@ public abstract class BaseArticle<T> implements Article, Identifiable<T, Long> {
         return prix_vente.get();
     }
 
-    public DoubleProperty prix_venteProperty() {
-        return prix_vente;
-    }
-
     public void setPrix_vente(Double prix_vente) {
         this.prix_vente.set(prix_vente);
     }
 
     public Integer getQt_stock() {
         return qt_stock.get();
-    }
-
-    public IntegerProperty qt_stockProperty() {
-        return qt_stock;
     }
 
     public void setQt_stock(Integer qt_stock) {
@@ -150,10 +158,6 @@ public abstract class BaseArticle<T> implements Article, Identifiable<T, Long> {
         return date_creation.get();
     }
 
-    public ObjectProperty<LocalDateTime> date_creationProperty() {
-        return date_creation;
-    }
-
     public void setDate_creation(LocalDateTime date_creation) {
         this.date_creation.set(date_creation);
     }
@@ -162,11 +166,8 @@ public abstract class BaseArticle<T> implements Article, Identifiable<T, Long> {
         return date_maj.get();
     }
 
-    public ObjectProperty<LocalDateTime> date_majProperty() {
-        return date_maj;
-    }
-
     public void setDate_maj(LocalDateTime date_maj) {
         this.date_maj.set(date_maj);
     }
+
 }

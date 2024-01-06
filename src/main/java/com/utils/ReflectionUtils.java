@@ -6,38 +6,67 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ReflectionUtils {
+public class ReflectionUtils<T> {
 
-    // This map stores the mapping between property names and their corresponding
-    // types
-    private static final Map<String, Class<?>> propertyTypeMap = new HashMap<>();
+    // This map stores the mapping between class names and property names/types
+    private final Map<String, Map<String, Class<?>>> classPropertyTypeMap = new HashMap<>();
 
-    // Populate the propertyTypeMap with property names and types
-    static {
-        propertyTypeMap.put("id", Long.class);
-        propertyTypeMap.put("type", String.class);
-        propertyTypeMap.put("libelle", String.class);
-        propertyTypeMap.put("prix_vente", Double.class);
-        propertyTypeMap.put("qt_stock", Integer.class);
-        propertyTypeMap.put("date_creation", LocalDateTime.class);
-        propertyTypeMap.put("date_maj", LocalDateTime.class);
-        propertyTypeMap.put("reference", String.class); // Additional property in TelephoneMobile
-        propertyTypeMap.put("marque", String.class); // Additional property in TelephoneMobile
-        propertyTypeMap.put("modele", String.class); // Additional property in TelephoneMobile
-        propertyTypeMap.put("cin", String.class);
-        propertyTypeMap.put("nom", String.class);
-        propertyTypeMap.put("prenom", String.class);
-        propertyTypeMap.put("adresse_de_livraison", String.class);
-        propertyTypeMap.put("email", String.class);
+    // Populate the classPropertyTypeMap with class names, property names, and types
+    public ReflectionUtils() {
+
+        // Article
+        Map<String, Class<?>> articleProperties = new HashMap<>();
+        articleProperties.put("id", Long.class);
+        articleProperties.put("type", String.class);
+        articleProperties.put("libelle", String.class);
+        articleProperties.put("prix_vente", Double.class);
+        articleProperties.put("qt_stock", Integer.class);
+        articleProperties.put("date_creation", LocalDateTime.class);
+        articleProperties.put("date_maj", LocalDateTime.class);
+        classPropertyTypeMap.put("BaseArticle", articleProperties);
+
+        // TelephoneMobile
+        Map<String, Class<?>> telephoneMobileProperties = new HashMap<>();
+        telephoneMobileProperties.put("reference", String.class);
+        telephoneMobileProperties.put("marque", String.class);
+        telephoneMobileProperties.put("modele", String.class);
+        classPropertyTypeMap.put("TelephoneMobile", telephoneMobileProperties);
+
+        // Client
+        Map<String, Class<?>> clientProperties = new HashMap<>();
+        clientProperties.put("cin", String.class);
+        clientProperties.put("nom", String.class);
+        clientProperties.put("prenom", String.class);
+        clientProperties.put("adresse_de_livraison", String.class);
+        clientProperties.put("email", String.class);
+        classPropertyTypeMap.put("Client", clientProperties);
     }
 
-    public static Class<?> getPropertyType(Class<?> clazz, String propertyName) {
-        // Check if the property is present in the propertyTypeMap
-        if (propertyTypeMap.containsKey(propertyName)) {
-            return propertyTypeMap.get(propertyName);
+    public Class<?> getPropertyType(Class<?> clazz, String propertyName) {
+        return getPropertyTypeRecursively(clazz, propertyName);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Class<?> getPropertyTypeRecursively(Class<?> clazz, String propertyName) {
+        String className = clazz.getSimpleName();
+
+        // Check if the class is present in the classPropertyTypeMap
+        if (classPropertyTypeMap.containsKey(className)) {
+            Map<String, Class<?>> propertyTypeMap = classPropertyTypeMap.get(className);
+
+            // Check if the property is present in the propertyTypeMap
+            if (propertyTypeMap.containsKey(propertyName)) {
+                return propertyTypeMap.get(propertyName);
+            }
         }
 
-        // If not found, use reflection to get the type from the declared methods
+        // If not found, check the superclass recursively
+        Class<? super T> superClass = (Class<? super T>) clazz.getSuperclass();
+        if (superClass != null) {
+            return getPropertyTypeRecursively(superClass, propertyName);
+        }
+
+        // If no superclass and property not found, use reflection
         try {
             String getterMethodName = "get" + StringUtils.capitalizeWord(propertyName);
             Method getterMethod = clazz.getDeclaredMethod(getterMethodName);
@@ -48,7 +77,7 @@ public class ReflectionUtils {
         }
     }
 
-    public static Object invokeMethod(Object target, String methodName, Class<?>[] parameterTypes, Object[] args) {
+    public Object invokeMethod(Object target, String methodName, Class<?>[] parameterTypes, Object[] args) {
         try {
             Method method = target.getClass().getDeclaredMethod(methodName, parameterTypes);
             return method.invoke(target, args);
@@ -58,7 +87,7 @@ public class ReflectionUtils {
         }
     }
 
-    public static void setPropertyValue(Object target, String propertyName, Object value) {
+    public void setPropertyValue(Object target, String propertyName, Object value) {
         try {
             Method method = target.getClass().getDeclaredMethod("set" +
                     StringUtils.capitalizeWord(propertyName),
@@ -69,7 +98,7 @@ public class ReflectionUtils {
         }
     }
 
-    public static Object convertToCorrectType(String newValue, Class<?> targetType) {
+    public Object convertToCorrectType(String newValue, Class<?> targetType) {
         // Implement conversion logic based on the target type
         if (targetType == Long.class) {
             return Long.parseLong(newValue);

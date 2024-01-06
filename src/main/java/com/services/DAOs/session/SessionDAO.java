@@ -143,4 +143,10 @@ public class SessionDAO implements SessionRepertoire {
         throw new UnsupportedOperationException("Unimplemented method 'modifier'");
     }
 
+    @Override
+    public int count() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'count'");
+    }
+
 }

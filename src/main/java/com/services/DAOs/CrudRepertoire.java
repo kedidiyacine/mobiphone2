@@ -17,5 +17,7 @@ public interface CrudRepertoire<T, ID> {
 
     T modifier(ID id, Map<String, Object> updates);
 
+    int count();
+
     // Additional CRUD methods can be added as needed
 }

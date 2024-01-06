@@ -26,12 +26,21 @@ public class ClientService implements DataService<Client>, AutoCloseable {
         return clientDAO.trouver_par_page(page, count);
     }
 
+    public List<Client> trouver_tout() {
+        return clientDAO.trouver_tout();
+    }
+
     public Client modifier(Long id, Map<String, Object> updates) {
         return clientDAO.modifier(id, updates);
     }
 
     public void supprimer_par_id(Long id) {
         clientDAO.supprimer_par_id(id);
+    }
+
+    @Override
+    public int count() {
+        return clientDAO.count();
     }
 
     @Override

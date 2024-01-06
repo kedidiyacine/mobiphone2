@@ -91,6 +91,7 @@ public class ClientDAO implements ClientRepertoire {
 
     @Override
     public List<Client> trouver_par_page(int page, int items_count) {
+
         List<Client> clients = new ArrayList<>();
         String sql = "SELECT * FROM client ORDER BY date_maj DESC LIMIT ? OFFSET ?";
         try {
@@ -138,6 +139,21 @@ public class ClientDAO implements ClientRepertoire {
         }
 
         return null;
+    }
+
+    @Override
+    public int count() {
+        String sql = "SELECT COUNT(*) FROM client";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
     private Client mapResultSetToClient(ResultSet resultSet) throws SQLException {

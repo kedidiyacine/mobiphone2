@@ -65,12 +65,22 @@ public class TelephoneMobile extends BaseArticle<TelephoneMobile> implements Tel
 
     // Getters and setters for JavaFX properties
 
-    public String getReference() {
-        return reference.get();
-    }
-
     public StringProperty referenceProperty() {
         return reference;
+    }
+
+    public StringProperty marqueProperty() {
+        return marque;
+    }
+
+    public StringProperty modeleProperty() {
+        return modele;
+    }
+
+    // Getters and setters
+
+    public String getReference() {
+        return reference.get();
     }
 
     public void setReference(String reference) {
@@ -81,20 +91,12 @@ public class TelephoneMobile extends BaseArticle<TelephoneMobile> implements Tel
         return marque.get();
     }
 
-    public StringProperty marqueProperty() {
-        return marque;
-    }
-
     public void setMarque(String marque) {
         this.marque.set(marque);
     }
 
     public String getModele() {
         return modele.get();
-    }
-
-    public StringProperty modeleProperty() {
-        return modele;
     }
 
     public void setModele(String modele) {

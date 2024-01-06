@@ -5,7 +5,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -85,11 +84,28 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
 
     }
 
+    public int count(String tableName) {
+        String sql = "SELECT COUNT(*) FROM " + tableName;
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+
     public List<T> trouver_par_page(int page, int items_count, String tablename) {
         List<T> articles = new ArrayList<>();
         String sql = String.format(Constants.SELECT_ARTICLES_BY_PAGE_SQL, Constants.ARTICLE_TABLE_NAME, tablename,
                 Constants.ARTICLE_TABLE_NAME, tablename,
                 Constants.ARTICLE_TABLE_NAME);
+        System.out.println(sql);
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setInt(1, items_count);
@@ -182,10 +198,20 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
         throw new UnsupportedOperationException("Unimplemented method 'trouver_par_id'");
     }
 
-    @Override
-    public List<T> trouver_tout() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'trouver_tout'");
+    public List<T> trouver_tout(String tablename) {
+        List<T> articles = new ArrayList<>();
+        String sql = String.format(Constants.SELECT_ARTICLES, Constants.ARTICLE_TABLE_NAME, tablename,
+                Constants.ARTICLE_TABLE_NAME, tablename,
+                Constants.ARTICLE_TABLE_NAME);
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
+                ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                articles.add(mapResultSetToArticle(resultSet));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return articles;
     }
 
     @Override
@@ -298,6 +324,18 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
             preparedStatement.setObject(index++, value);
         }
         preparedStatement.setObject(index, id);
+    }
+
+    @Override
+    public int count() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'count'");
+    }
+
+    @Override
+    public List<T> trouver_tout() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'trouver_tout'");
     }
 
 }

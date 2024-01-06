@@ -42,13 +42,17 @@ public class TelephoneMobileDAO implements TelephoneMobileRepertoire {
 
     @Override
     public List<TelephoneMobile> trouver_tout() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'trouver_tout'");
+        return articleDAO.trouver_tout(Constants.TELEPHONE_TABLE_NAME);
     }
 
     @Override
     public void supprimer_par_id(Long id) {
         articleDAO.supprimer_par_id(id);
+    }
+
+    @Override
+    public int count() {
+        return articleDAO.count(Constants.TELEPHONE_TABLE_NAME);
     }
 
     @Override

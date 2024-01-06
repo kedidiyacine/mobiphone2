@@ -36,10 +36,20 @@ public class TelephoneMobileService implements DataService<TelephoneMobile>, Aut
     }
 
     @Override
+    public int count() {
+        return telephoneMobileDAO.count();
+    }
+
+    @Override
     public void close() throws Exception {
         if (connection != null && connection.isClosed()) {
             connection.close();
         }
+    }
+
+    @Override
+    public List<TelephoneMobile> trouver_tout() {
+        return telephoneMobileDAO.trouver_tout();
     }
 
 }
