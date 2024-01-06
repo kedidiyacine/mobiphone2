@@ -66,7 +66,6 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
     private Button btnDelete;
     private Button btnRefresh;
     private ObservableList<T> entities = FXCollections.observableArrayList();
-    private ObservableList<T> entitiesForCurrentPage = FXCollections.observableArrayList();
     private DataService<T> service;
     private final Set<String> editableColumns = new HashSet<>();
     private final Map<Serializable, Map<String, Map<String, String>>> modificationsMap = new HashMap<>();
@@ -360,19 +359,13 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         tableView.setItems(FXCollections.observableArrayList());
 
         // Update the entities list using setAll
-        // entities = FXCollections.observableArrayList(
-        // service.getAllByPage(pagination.getCurrentPageIndex() + 1, itemsPerPage));
         entities = FXCollections.observableArrayList(
-                service.trouver_tout());
-
+                service.getAllByPage(pagination.getCurrentPageIndex() + 1, itemsPerPage));
         // Set a new modifiable ObservableList to the tableView
-        // tableView.setItems(entities);
-        int fromIndex = pagination.getCurrentPageIndex() * itemsPerPage;
-        int toIndex = Math.min(fromIndex + itemsPerPage, entities.size());
+        tableView.setItems(entities);
 
         // Update the total number of items and recalculate the number of pages
-        entitiesForCurrentPage = FXCollections.observableArrayList(entities.subList(fromIndex, toIndex));
-        tableView.setItems(entitiesForCurrentPage);
+
         pagination.setPageCount(calculatePageCount());
 
     }
@@ -517,34 +510,17 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         }
     }
 
-    private int calculatePageCountFromSource() {
+    private int calculatePageCount() {
         int totalItems = service.count();
         return (totalItems + itemsPerPage - 1) / itemsPerPage;
     }
 
-    private int calculatePageCount() {
-        return Math.floorDiv((entities.size() + itemsPerPage - 1), itemsPerPage);
-    }
-
     private Node createPage(int pageIndex) {
-        // entities = FXCollections.observableArrayList(
-        // service.getAllByPage(pageIndex, itemsPerPage));
-
         entities = FXCollections.observableArrayList(
-                service.trouver_tout());
+                service.getAllByPage(pageIndex, itemsPerPage));
 
-        int pageCount = calculatePageCount();
-
-        pagination.setPageCount(pageCount);
-
-        int fromIndex = pageIndex * itemsPerPage;
-        int toIndex = Math.min(fromIndex + itemsPerPage, entities.size());
-
-        // tableView.getItems().setAll(entities);
-        entitiesForCurrentPage = FXCollections.observableArrayList(entities.subList(fromIndex, toIndex));
-        tableView.getItems().setAll(entitiesForCurrentPage);
-
-        return tableView;
+        tableView.getItems().setAll(entities);
+        return tableView; // You might need to adjust the container based on your layout
     }
 
     public void initialize() {
@@ -553,12 +529,12 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         makeColumnsEditable();
         setOnEditCommitHandlersForColumns();
 
-        int numberOfPages = calculatePageCountFromSource();
-
+        // Create and configure Pagination
+        int numberOfPages = calculatePageCount();
+        // Add Pagination to VBox
+        pagination = new Pagination(numberOfPages);
+        pagination.setPageFactory(pageIndex -> createPage(pageIndex + 1));
         if (numberOfPages > 0) {
-            // Create and configure Pagination
-            pagination = new Pagination(numberOfPages, 0);
-            pagination.setPageFactory(pageIndex -> createPage(pageIndex));
             // Get the parent of the TableView (VBox)
             Parent parent = tableView.getParent();
 
@@ -572,7 +548,6 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
                 VBox.setVgrow(pagination, Priority.ALWAYS);
                 ((VBox) parent).getChildren().add(pagination);
             }
-
         }
 
         // Populate entities list before hydrating the table view
@@ -584,7 +559,7 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
             while (change.next()) {
                 if (change.wasAdded() || change.wasRemoved()) {
                     // Check if the size is below 10
-                    if (entities.size() < itemsPerPage) {
+                    if (entities.size() < Constants.DEFAULT_ITEMS_PER_PAGE) {
                         // Call refreshItems
                         refreshItems();
                     }
