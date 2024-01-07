@@ -68,6 +68,8 @@ public class ReflectionUtils<T> {
         }
 
         // still have errors !
+        // doesn't get the proper type for the methods
+        // bug started since introducing superclass lookup through recursivity
 
         // If not found, check the superclass recursively
         Class<? super T> superClass = (Class<? super T>) clazz.getSuperclass();
