@@ -129,6 +129,7 @@ public class AuthService implements AutoCloseable {
                 sessionDAO.supprimer_par_id(sessionAutentifie.getId());
                 sessionAutentifie = null;
                 compteAuthentifie = null;
+                setCredentials(null);
                 emptySessionData();
             }
         } catch (Exception e) {

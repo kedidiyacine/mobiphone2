@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import com.controllers.ControllersWithAuth;
 import com.services.AuthService;
 import com.utils.Constants;
+import com.utils.Constants.KEY;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -24,8 +25,9 @@ public class MainApp extends Application {
         stage = s;
         try {
             auth = new AuthService();
-            if (auth.getSession() != null)
-                setRoot("home");
+            if (auth.getSession() != null &&
+                    auth.getCredentials().get(KEY.ROLE).equals(Constants.ROLES.get(0)))
+                setRoot(Constants.AGENT_HOME);
             else
                 setRoot(Constants.AUTH_FXML);
         } catch (SQLException e) {
@@ -52,8 +54,6 @@ public class MainApp extends Application {
         fxmlLoader.setControllerFactory(param -> {
             try {
                 Object controller = param.getDeclaredConstructor().newInstance();
-
-                //
 
                 if (controller instanceof ControllersWithAuth) {
                     ((ControllersWithAuth) controller).setAuth(auth);

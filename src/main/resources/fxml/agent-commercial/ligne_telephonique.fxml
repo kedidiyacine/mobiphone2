@@ -14,6 +14,7 @@
 
 <VBox fx:id="root" VBox.vgrow="ALWAYS" xmlns="http://javafx.com/javafx/22-ea"
     xmlns:fx="http://javafx.com/fxml/1"
+    fx:controller="com.controllers.LigneTelephoniqueController"
 >
     <!-- Add your articles-related UI elements here -->
     <children>
@@ -32,9 +33,10 @@
                 <TableColumn fx:id="libelle" prefWidth="200.0" text="Libelle" />
                 <TableColumn fx:id="prix_vente" prefWidth="200.0" text="Prix Vente" />
                 <TableColumn fx:id="qt_stock" prefWidth="200.0" text="Qt stock" />
-                <!-- <TableColumn fx:id="reference" prefWidth="200.0" text="Reference" />
-                <TableColumn fx:id="modele" prefWidth="200.0" text="Modele" />
-                <TableColumn fx:id="marque" prefWidth="200.0" text="Marque" /> -->
+                <TableColumn fx:id="numero" prefWidth="200.0" text="Numero" />
+                <TableColumn fx:id="operateur" prefWidth="200.0" text="Operateur" />
+                <TableColumn fx:id="montant_min_consommation" prefWidth="200.0"
+                    text="Montant minimum de consommation" />
                 <TableColumn fx:id="date_creation" prefWidth="200.0" text="Date Creation" />
                 <TableColumn fx:id="date_maj" prefWidth="200.0" text="Date Maj" />
             </columns>

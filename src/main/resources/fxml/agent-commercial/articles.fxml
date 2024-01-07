@@ -27,8 +27,8 @@
                 <items>
                     <FXCollections fx:factory="observableArrayList">
                         <String fx:value="telephone mobile" />
-                        <String fx:value="ligne telephone" />
-                        <String fx:value="carte telephone" />
+                        <String fx:value="ligne telephonique" />
+                        <String fx:value="carte telephonique" />
                         <String fx:value="cle 3g" />
                     </FXCollections>
                 </items>

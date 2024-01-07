@@ -1,6 +1,7 @@
 package com.utils;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -26,13 +27,22 @@ public class StringUtils {
         return sqlBuilder.toString();
     }
 
-    public static String buildSQLDeleteStatement() {
-        StringBuilder sqlBuilder = new StringBuilder();
-        sqlBuilder.append(String.format("DELETE FROM %s WHERE %s =?", Constants.ARTICLE_TABLE_NAME,
-                Constants.ARTICLE_PRIMARY_KEY));
+    public static String buildSQLDeleteStatement(String sqlTableName, String primaryKey) {
 
-        return sqlBuilder.toString();
+        return String.format("DELETE FROM %s WHERE %s =?", sqlTableName, primaryKey);
 
+    }
+
+    public static String buildSQLSelectJoinStatement(String sqlTableName1, String sqlTableName2, String primaryKey1,
+            String primaryKey2, String where) {
+
+        return String.format("SELECT * FROM %s INNER JOIN %s ON %s.%s = %s.%s WHERE %s = ?", sqlTableName1,
+                sqlTableName2, sqlTableName1, primaryKey1, sqlTableName2, primaryKey2, where);
+    }
+
+    public static String buildSQLSelectCountStatement(String sqlTableName) {
+
+        return String.format("SELECT COUNT(*) FROM %s", sqlTableName);
     }
 
     public static String buildChangeMessage(Serializable id, Map<String, Map<String, String>> columnModifications) {
@@ -48,6 +58,28 @@ public class StringUtils {
         }
 
         return messageBuilder.toString();
+    }
+
+    public static String buildInsertStatement(String sqlTableName, List<String> columns) {
+        StringBuilder sqlBuilder = new StringBuilder("INSERT INTO %s (");
+
+        // Use String.join to concatenate column names with commas
+        String columnNames = String.join(", ", columns);
+
+        sqlBuilder.append(columnNames)
+                .append(") VALUES(");
+
+        // Add placeholders for values
+        for (int i = 0; i < columns.size(); i++) {
+            sqlBuilder.append("?");
+            if (i < columns.size() - 1) {
+                sqlBuilder.append(", ");
+            }
+        }
+
+        sqlBuilder.append(")");
+
+        return String.format(sqlBuilder.toString(), sqlTableName);
     }
 
 }

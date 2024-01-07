@@ -32,6 +32,13 @@ public class ReflectionUtils<T> {
         telephoneMobileProperties.put("modele", String.class);
         classPropertyTypeMap.put("TelephoneMobile", telephoneMobileProperties);
 
+        // LigneTelephonique
+        Map<String, Class<?>> ligneTelephoniqueroperties = new HashMap<>();
+        ligneTelephoniqueroperties.put("numero", String.class);
+        ligneTelephoniqueroperties.put("operateur", String.class);
+        ligneTelephoniqueroperties.put("montant_min_consommation", Double.class);
+        classPropertyTypeMap.put("LigneTelephonique", ligneTelephoniqueroperties);
+
         // Client
         Map<String, Class<?>> clientProperties = new HashMap<>();
         clientProperties.put("cin", String.class);
@@ -59,6 +66,8 @@ public class ReflectionUtils<T> {
                 return propertyTypeMap.get(propertyName);
             }
         }
+
+        // still have errors !
 
         // If not found, check the superclass recursively
         Class<? super T> superClass = (Class<? super T>) clazz.getSuperclass();

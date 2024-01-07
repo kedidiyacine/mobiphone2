@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -13,6 +14,7 @@ import java.util.stream.Collectors;
 import com.utils.Constants;
 import com.utils.StringUtils;
 import com.models.BaseArticle;
+import com.models.LigneTelephonique;
 import com.models.TelephoneMobile;
 
 public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T> {
@@ -24,13 +26,30 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
 
     @Override
     public T enregistrer(T entity) {
-        String insertTypeSQL = String.format(Constants.INSERT_TYPE_SQL, entity.getType().replace(' ', '_'));
+        String tableName = entity.getType().replace(" ", "_");
+        List<String> columns = null;
+
+        // Use a Map to store table names and their corresponding columns
+        Map<String, List<String>> tableColumnsMap = new HashMap<>();
+        tableColumnsMap.put(Constants.TELEPHONE_TABLE_NAME, Constants.TELEPHONE_COLUMNS);
+        tableColumnsMap.put(Constants.LIGNE_TELEPHONIQUE_TABLE_NAME, Constants.LIGNE_TELEPHONIQUE_COLUMNS);
+        // Add more types as needed
+
+        // Retrieve columns based on the table name
+        columns = tableColumnsMap.get(tableName);
+
+        if (columns == null) {
+            // Handle unsupported table name or throw an exception
+            throw new IllegalArgumentException("Unsupported table name: " + tableName);
+        }
+
+        String insertTypeSQL = StringUtils.buildInsertStatement(tableName, columns);
 
         try {
             connection.setAutoCommit(false);
 
-            try (PreparedStatement preparedStatementArticle = connection.prepareStatement(Constants.INSERT_ARTICLE_SQL,
-                    Statement.RETURN_GENERATED_KEYS);
+            try (PreparedStatement preparedStatementArticle = connection.prepareStatement(
+                    Constants.INSERT_ARTICLE_SQL, Statement.RETURN_GENERATED_KEYS);
                     PreparedStatement preparedStatementType = connection.prepareStatement(insertTypeSQL)) {
 
                 prepareAndExecuteArticleInsert(entity, preparedStatementArticle, preparedStatementType);
@@ -46,6 +65,7 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
 
         } catch (SQLException e) {
             e.printStackTrace();
+            // Consider logging the exception or rethrowing a custom exception
         }
 
         return entity;
@@ -53,14 +73,16 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
 
     @Override
     public T trouver_par_id(Long id, String tablename) {
-        String sql = String.format(Constants.SELECT_ARTICLE_BY_ID_SQL, Constants.ARTICLE_TABLE_NAME, tablename,
-                Constants.ARTICLE_TABLE_NAME, tablename,
-                Constants.ARTICLE_TABLE_NAME);
+        String sql = StringUtils.buildSQLSelectJoinStatement(Constants.ARTICLE_TABLE_NAME, tablename,
+                Constants.ARTICLE_PRIMARY_KEY, Constants.SUB_ARTICLE_PRIMARY_KEY,
+                Constants.ARTICLE_TABLE_NAME + "." + Constants.ARTICLE_PRIMARY_KEY);
+
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setLong(1, id);
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
+                    // add more types here on this method
                     return mapResultSetToArticle(resultSet);
                 }
             }
@@ -72,7 +94,7 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
 
     @Override
     public void supprimer_par_id(Long id) {
-        String sql = StringUtils.buildSQLDeleteStatement();
+        String sql = StringUtils.buildSQLDeleteStatement(Constants.ARTICLE_TABLE_NAME, Constants.ARTICLE_PRIMARY_KEY);
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setLong(1, id);
@@ -85,7 +107,7 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
     }
 
     public int count(String tableName) {
-        String sql = "SELECT COUNT(*) FROM " + tableName;
+        String sql = StringUtils.buildSQLSelectCountStatement(tableName);
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -113,6 +135,7 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
 
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
+                // support for other types by changing this method implementation...
                 articles.add(mapResultSetToArticle(resultSet));
             }
 
@@ -138,18 +161,22 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
             // Start a transaction
             connection.setAutoCommit(false);
 
-            if (Constants.TELEPHONE_COLUMNS.stream().anyMatch(updates::containsKey)) {
-                // Update telephone_mobile table
-                updateTable(Constants.TELEPHONE_TABLE_NAME, id,
-                        filterUpdatesPerColumns(Constants.TELEPHONE_COLUMNS, updates),
-                        Constants.SUB_ARTICLE_PRIMARY_KEY);
-            }
-
             if (Constants.ARTICLE_COLUMNS.stream().anyMatch(updates::containsKey)) {
                 // Update article table
                 updateTable(Constants.ARTICLE_TABLE_NAME, id,
                         filterUpdatesPerColumns(Constants.ARTICLE_COLUMNS, updates),
                         Constants.ARTICLE_PRIMARY_KEY);
+            }
+
+            if (Constants.TELEPHONE_COLUMNS.stream().anyMatch(updates::containsKey)) {
+                // Update telephone_mobile table
+                updateTable(Constants.TELEPHONE_TABLE_NAME, id,
+                        filterUpdatesPerColumns(Constants.TELEPHONE_COLUMNS, updates),
+                        Constants.SUB_ARTICLE_PRIMARY_KEY);
+            } else if (Constants.LIGNE_TELEPHONIQUE_COLUMNS.stream().anyMatch(updates::containsKey)) {
+                updateTable(Constants.LIGNE_TELEPHONIQUE_TABLE_NAME, id,
+                        filterUpdatesPerColumns(Constants.LIGNE_TELEPHONIQUE_COLUMNS, updates),
+                        Constants.SUB_ARTICLE_PRIMARY_KEY);
             }
 
             // Commit the transaction
@@ -206,6 +233,7 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
                 ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {
+                // again here need support for other types
                 articles.add(mapResultSetToArticle(resultSet));
             }
         } catch (SQLException e) {
@@ -252,14 +280,8 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
         try (ResultSet generatedKeys = preparedStatementArticle.getGeneratedKeys()) {
             if (generatedKeys.next()) {
                 Long generatedId = generatedKeys.getLong(1);
-                // LocalDateTime generatedDateCreation =
-                // generatedKeys.getTimestamp(2).toLocalDateTime();
-                // LocalDateTime generatedDateMaj =
-                // generatedKeys.getTimestamp(3).toLocalDateTime();
 
                 entity.setId(generatedId);
-                // entity.setDate_creation(generatedDateCreation);
-                // entity.setDate_maj(generatedDateMaj);
 
                 executeTypeInsert(entity, preparedStatementType);
             } else {
@@ -271,10 +293,15 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
     private void executeTypeInsert(T entity, PreparedStatement preparedStatementType) throws SQLException {
         if (entity.getType().equals(Constants.TELEPHONE_MOBILE_TYPE)) {
             prepareTelephoneMobileStatements(preparedStatementType, (TelephoneMobile) entity);
-            preparedStatementType.executeUpdate();
+        }
+        // add other types here
+        else if (entity.getType().equals(Constants.LIGNE_TELEPHONIQUE_TYPE)) {
+            prepareLigneTelephoniqueStatements(preparedStatementType, (LigneTelephonique) entity);
         } else {
             throw new IllegalArgumentException("Unsupported article type: " + entity.getType());
         }
+        preparedStatementType.executeUpdate();
+
     }
 
     @SuppressWarnings("unchecked")
@@ -293,7 +320,21 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
                     resultSet.getString("modele"),
                     resultSet.getTimestamp("date_creation").toLocalDateTime(),
                     resultSet.getTimestamp("date_maj").toLocalDateTime());
-        } else {
+        } else if ("ligne telephonique".equals(articleType)) {
+            return (T) new LigneTelephonique(
+                    resultSet.getLong("id"),
+                    resultSet.getString("libelle"),
+                    resultSet.getDouble("prix_vente"),
+                    resultSet.getInt("qt_stock"),
+                    resultSet.getString("numero"),
+                    resultSet.getString("operateur"),
+                    resultSet.getDouble("montant_min_consommation"),
+                    resultSet.getTimestamp("date_creation").toLocalDateTime(),
+                    resultSet.getTimestamp("date_maj").toLocalDateTime());
+
+        }
+
+        else {
             // Handle other types of articles or throw an exception
             throw new IllegalArgumentException("Unsupported article type: " + articleType);
         }
@@ -314,6 +355,14 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
         preparedStatement.setString(2, telephone.getReference());
         preparedStatement.setString(3, telephone.getMarque());
         preparedStatement.setString(4, telephone.getModele());
+    }
+
+    private void prepareLigneTelephoniqueStatements(PreparedStatement preparedStatement, LigneTelephonique ligne)
+            throws SQLException {
+        preparedStatement.setLong(1, ligne.getId());
+        preparedStatement.setString(2, ligne.getNumero());
+        preparedStatement.setString(3, ligne.getOperateur());
+        preparedStatement.setDouble(4, ligne.getMontant_min_consommation());
     }
 
     private void prepareArticleStatementsFromMap(Long id, PreparedStatement preparedStatement,

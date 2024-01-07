@@ -4,10 +4,11 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import com.utils.Constants;
+
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
 import javafx.scene.control.ComboBox;
 import javafx.scene.layout.VBox;
 
@@ -26,10 +27,10 @@ public class ArticlesController implements Initializable {
         cmbArticleType.getSelectionModel().selectedItemProperty().addListener(
                 (obs, oldSelection, newSelection) -> {
 
-                    if ("telephone mobile".equals(newSelection)) {
+                    if (newSelection.equals(Constants.TELEPHONE_MOBILE_TYPE)) {
                         reloadFXML(newSelection, phoneCtrl);
                     }
-                    if ("ligne telephone".equals(newSelection)) {
+                    if (newSelection.equals(Constants.LIGNE_TELEPHONIQUE_TYPE)) {
                         reloadFXML(newSelection, null);
                     }
                 });
@@ -46,19 +47,17 @@ public class ArticlesController implements Initializable {
             if (lastIndex >= 1) {
                 root.getChildren().remove(lastIndex);
             }
-            if ("telephone mobile".equals(selected)) {
-                FXMLLoader loader = new FXMLLoader(
-                        getClass().getResource("/fxml/agent-commercial/" +
-                                selected.replace(" ", "_") + ".fxml"));
-                loader.setController(controller);
 
-                // if (phoneCtrl.getTableCtrl() == null) {
-                VBox loadedContent = loader.load();
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/fxml/agent-commercial/" +
+                            selected.replace(" ", "_") + ".fxml"));
+            loader.setController(controller);
 
-                // Add the new content to the VBox
-                root.getChildren().add(loadedContent);
-                // }
-            }
+            VBox loadedContent = loader.load();
+
+            // Add the new content to the VBox
+            root.getChildren().add(loadedContent);
+
             // Add any additional setup for the loaded FXML
 
         } catch (IOException e) {

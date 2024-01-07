@@ -2,14 +2,13 @@ package com.controllers;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
 import com.MainApp;
 import com.services.AuthService;
+import com.utils.Constants;
 import com.utils.Constants.KEY;
 
 import javafx.event.ActionEvent;
@@ -22,8 +21,6 @@ import javafx.scene.control.TextField;
 public class AuthController implements Initializable, ControllersWithAuth {
     private AuthService auth;
     private String selectedRole;
-    public List<String> ROLES = Arrays.asList("Agent commercial", "Responsable Commercial", "Comptable");
-    public List<String> PATHS = Arrays.asList("home", "home", "home");
 
     @FXML
     private TextField login;
@@ -50,7 +47,7 @@ public class AuthController implements Initializable, ControllersWithAuth {
             auth.signIn();
 
             if (auth.getSession() != null) {
-                String path = PATHS.get(ROLES.indexOf(selectedRole));
+                String path = Constants.PATHS.get(Constants.ROLES.indexOf(selectedRole));
 
                 // Here we can direct the loggedIn user to the interface specific for his role.
                 MainApp.setRoot(path, com.utils.StringUtils.capitalizeWord(path));
@@ -72,7 +69,7 @@ public class AuthController implements Initializable, ControllersWithAuth {
 
     @FXML
     public void initialize(URL url, ResourceBundle rb) {
-        role_comboBox.getItems().addAll(ROLES);
+        role_comboBox.getItems().addAll(Constants.ROLES);
 
         // Set an initial selected item if needed
         role_comboBox.getSelectionModel().selectFirst();

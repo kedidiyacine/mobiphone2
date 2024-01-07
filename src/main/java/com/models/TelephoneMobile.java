@@ -77,8 +77,6 @@ public class TelephoneMobile extends BaseArticle<TelephoneMobile> implements Tel
         return modele;
     }
 
-    // Getters and setters
-
     public String getReference() {
         return reference.get();
     }
@@ -102,6 +100,8 @@ public class TelephoneMobile extends BaseArticle<TelephoneMobile> implements Tel
     public void setModele(String modele) {
         this.modele.set(modele);
     }
+
+    // Getters and setters
 
     @Override
     public Long getId() {
