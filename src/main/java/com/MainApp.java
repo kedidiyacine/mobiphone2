@@ -52,6 +52,9 @@ public class MainApp extends Application {
         fxmlLoader.setControllerFactory(param -> {
             try {
                 Object controller = param.getDeclaredConstructor().newInstance();
+
+                //
+
                 if (controller instanceof ControllersWithAuth) {
                     ((ControllersWithAuth) controller).setAuth(auth);
                 }

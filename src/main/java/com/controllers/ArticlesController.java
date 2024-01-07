@@ -1,78 +1,69 @@
 package com.controllers;
 
+import java.io.IOException;
 import java.net.URL;
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.List;
 import java.util.ResourceBundle;
 
-import com.models.TelephoneMobile;
-import com.services.TelephoneMobileService;
-
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
+import javafx.scene.Parent;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.TableView;
+import javafx.scene.layout.VBox;
 
 public class ArticlesController implements Initializable {
-    public List<String> ARTICLE_TYPES = Arrays.asList("telephone mobile", "ligne telephone", "carte telephone",
-            "cle 3g");
-    private String selectedType = "telephone mobile";
+    @FXML
+    private VBox root;
 
     @FXML
     private ComboBox<String> cmbArticleType;
 
-    @FXML
-    private Button btnSave;
-
-    @FXML
-    private Button btnDelete;
-
-    @FXML
-    private Button btnRefresh;
-
-    @FXML
-    private Button btnCreate;
-
-    @FXML
-    private TableView<TelephoneMobile> tblArticles;
-
-    @FXML
-    private void handleArticleTypeChange(ActionEvent event) throws SQLException {
-        selectedType = cmbArticleType.getValue();
-        if (selectedType != null) {
-            updateTableController(selectedType);
-        }
-    }
-
-    private void updateTableController(String articleType) throws SQLException {
-        ActionButtons actionButtons = new ActionButtons(btnSave, btnDelete, btnRefresh, btnCreate);
-
-        switch (articleType) {
-            case "telephone mobile":
-                new TableController<TelephoneMobile, TelephoneMobileService>(tblArticles,
-                        TelephoneMobile.class,
-                        new TelephoneMobileService(),
-                        actionButtons);
-                break;
-            // Add cases for other article types if needed
-            default:
-                // Handle unknown type or provide a default behavior
-                break;
-        }
-    }
+    private final TelephoneMobileController phoneCtrl = new TelephoneMobileController();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+
+        cmbArticleType.getSelectionModel().selectedItemProperty().addListener(
+                (obs, oldSelection, newSelection) -> {
+
+                    if ("telephone mobile".equals(newSelection)) {
+                        reloadFXML(newSelection, phoneCtrl);
+                    }
+                    if ("ligne telephone".equals(newSelection)) {
+                        reloadFXML(newSelection, null);
+                    }
+                });
+
+        cmbArticleType.getSelectionModel().selectFirst();
+
+    }
+
+    private void reloadFXML(String selected, Object controller) {
         try {
-            cmbArticleType.getItems().addAll(ARTICLE_TYPES);
-            cmbArticleType.getSelectionModel().selectFirst();
-            selectedType = cmbArticleType.getValue();
-            updateTableController(selectedType);
-        } catch (SQLException e) {
+            // Remove the last child (if exists)
+            int lastIndex = root.getChildren().size() - 1;
+
+            if (lastIndex >= 1) {
+                root.getChildren().remove(lastIndex);
+            }
+            if ("telephone mobile".equals(selected)) {
+                FXMLLoader loader = new FXMLLoader(
+                        getClass().getResource("/fxml/agent-commercial/" +
+                                selected.replace(" ", "_") + ".fxml"));
+                loader.setController(controller);
+
+                // if (phoneCtrl.getTableCtrl() == null) {
+                VBox loadedContent = loader.load();
+
+                // Add the new content to the VBox
+                root.getChildren().add(loadedContent);
+                // }
+            }
+            // Add any additional setup for the loaded FXML
+
+        } catch (IOException e) {
             e.printStackTrace();
+            root.getChildren().clear();
         }
     }
 
