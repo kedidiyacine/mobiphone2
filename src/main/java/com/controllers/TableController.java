@@ -178,13 +178,15 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         for (TableColumn<T, ?> column : columns) {
             if (column.getId() != null && !column.getId().isEmpty() && editableColumns.contains(column.getId())) {
                 StringConverter<?> converter = getDefaultConverter();
-
                 if (converter != null) {
-                    // Use raw type for setCellFactory to avoid type inference issues
-                    column.setCellFactory((Callback) TextFieldTableCell.forTableColumn(converter));
+                    setCellFactoryForColumn(column, (StringConverter) converter);
                 }
             }
         }
+    }
+
+    private <Col> void setCellFactoryForColumn(TableColumn<T, Col> column, StringConverter<Col> converter) {
+        column.setCellFactory(TextFieldTableCell.forTableColumn(converter));
     }
 
     private StringConverter<?> getDefaultConverter() {
