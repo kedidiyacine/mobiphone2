@@ -45,19 +45,26 @@ public class StringUtils {
         return String.format("SELECT COUNT(*) FROM %s", sqlTableName);
     }
 
-    public static String buildChangeMessage(Serializable id, Map<String, Map<String, String>> columnModifications) {
+    public static String buildChangeMessage(Serializable id, Map<String, Map<String, ?>> columnModifications) {
         StringBuilder messageBuilder = new StringBuilder();
         messageBuilder.append(String.format("Changed row with id: %d%n", id));
 
-        for (Map.Entry<String, Map<String, String>> columnEntry : columnModifications.entrySet()) {
+        for (Map.Entry<String, Map<String, ?>> columnEntry : columnModifications.entrySet()) {
             String columnName = columnEntry.getKey();
-            String oldCin = columnEntry.getValue().get("old");
-            String newCin = columnEntry.getValue().get("new");
+            String oldCin = columnEntry.getValue().get("old").toString();
+            String newCin = columnEntry.getValue().get("new").toString();
 
             messageBuilder.append(String.format("\t- %s changed from '%s' to '%s'%n", columnName, oldCin, newCin));
         }
 
         return messageBuilder.toString();
+    }
+
+    public static String buildDeletionMessage(int itemCount) {
+        String headerText = Constants.DELETION_MESSAGE_HEADER;
+
+        return String.format(headerText, itemCount);
+
     }
 
     public static String buildInsertStatement(String sqlTableName, List<String> columns) {

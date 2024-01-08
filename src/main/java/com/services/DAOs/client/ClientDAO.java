@@ -164,8 +164,8 @@ public class ClientDAO implements ClientRepertoire {
                 resultSet.getString("prenom"),
                 resultSet.getString("adresse_de_livraison"),
                 resultSet.getString("email"),
-                resultSet.getTimestamp("date_creation").toLocalDateTime(),
-                resultSet.getTimestamp("date_maj").toLocalDateTime());
+                resultSet.getTimestamp("date_creation"),
+                resultSet.getTimestamp("date_maj"));
     }
 
     private void prepareClientStatements(PreparedStatement preparedStatement, Client client) throws SQLException {

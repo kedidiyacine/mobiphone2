@@ -1,6 +1,6 @@
 package com.models;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
@@ -19,8 +19,8 @@ public abstract class BaseArticle<T> implements Article, Identifiable<T, Long> {
     protected final StringProperty libelle = new SimpleStringProperty();
     protected final DoubleProperty prix_vente = new SimpleDoubleProperty();
     protected final IntegerProperty qt_stock = new SimpleIntegerProperty();
-    protected final ObjectProperty<LocalDateTime> date_creation = new SimpleObjectProperty<LocalDateTime>();
-    protected final ObjectProperty<LocalDateTime> date_maj = new SimpleObjectProperty<LocalDateTime>();
+    protected final ObjectProperty<Timestamp> date_creation = new SimpleObjectProperty<Timestamp>();
+    protected final ObjectProperty<Timestamp> date_maj = new SimpleObjectProperty<Timestamp>();
 
     protected BaseArticle() {
     }
@@ -34,7 +34,7 @@ public abstract class BaseArticle<T> implements Article, Identifiable<T, Long> {
     }
 
     protected BaseArticle(Long id, String type, String libelle, Double prix_vente, Integer qt_stock,
-            LocalDateTime date_creation, LocalDateTime date_maj) {
+            Timestamp date_creation, Timestamp date_maj) {
         setId(id);
         setLibelle(libelle);
         setPrix_vente(prix_vente);
@@ -45,7 +45,7 @@ public abstract class BaseArticle<T> implements Article, Identifiable<T, Long> {
     }
 
     protected BaseArticle(String type, String libelle, Double prix_vente, Integer qt_stock,
-            LocalDateTime date_creation, LocalDateTime date_maj) {
+            Timestamp date_creation, Timestamp date_maj) {
         this(type, libelle, prix_vente, qt_stock);
         setDate_creation(date_creation);
         setDate_maj(date_maj);
@@ -58,8 +58,8 @@ public abstract class BaseArticle<T> implements Article, Identifiable<T, Long> {
         setType(type);
     }
 
-    protected BaseArticle(Long id, String type, Double prix_vente, Integer qt_stock, LocalDateTime date_creation,
-            LocalDateTime date_maj) {
+    protected BaseArticle(Long id, String type, Double prix_vente, Integer qt_stock, Timestamp date_creation,
+            Timestamp date_maj) {
         this(id, type, prix_vente, qt_stock);
         setDate_creation(date_creation);
         setDate_maj(date_maj);
@@ -104,11 +104,11 @@ public abstract class BaseArticle<T> implements Article, Identifiable<T, Long> {
         return qt_stock;
     }
 
-    public ObjectProperty<LocalDateTime> date_creationProperty() {
+    public ObjectProperty<Timestamp> date_creationProperty() {
         return date_creation;
     }
 
-    public ObjectProperty<LocalDateTime> date_majProperty() {
+    public ObjectProperty<Timestamp> date_majProperty() {
         return date_maj;
     }
 
@@ -154,19 +154,19 @@ public abstract class BaseArticle<T> implements Article, Identifiable<T, Long> {
         this.qt_stock.set(qt_stock);
     }
 
-    public LocalDateTime getDate_creation() {
+    public Timestamp getDate_creation() {
         return date_creation.get();
     }
 
-    public void setDate_creation(LocalDateTime date_creation) {
+    public void setDate_creation(Timestamp date_creation) {
         this.date_creation.set(date_creation);
     }
 
-    public LocalDateTime getDate_maj() {
+    public Timestamp getDate_maj() {
         return date_maj.get();
     }
 
-    public void setDate_maj(LocalDateTime date_maj) {
+    public void setDate_maj(Timestamp date_maj) {
         this.date_maj.set(date_maj);
     }
 

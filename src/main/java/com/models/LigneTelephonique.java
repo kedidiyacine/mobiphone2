@@ -3,7 +3,7 @@ package com.models;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 import javafx.beans.property.StringProperty;
 import javafx.beans.property.DoubleProperty;
@@ -23,7 +23,7 @@ public class LigneTelephonique extends BaseArticle<LigneTelephonique> implements
 
     public LigneTelephonique(Long id, String libelle, Double prix_vente,
             Integer qt_stock, String numero, String operateur, Double montant_min_consommation,
-            LocalDateTime date_creation, LocalDateTime date_maj) {
+            Timestamp date_creation, Timestamp date_maj) {
         super(id, "ligne telephonique", libelle, prix_vente, qt_stock, date_creation, date_maj);
         setNumero(numero);
         setOperateur(operateur);
@@ -71,22 +71,22 @@ public class LigneTelephonique extends BaseArticle<LigneTelephonique> implements
     // Getter and Setters
 
     @Override
-    public ObjectProperty<LocalDateTime> date_creationProperty() {
+    public ObjectProperty<Timestamp> date_creationProperty() {
         return super.date_creationProperty();
     }
 
     @Override
-    public ObjectProperty<LocalDateTime> date_majProperty() {
+    public ObjectProperty<Timestamp> date_majProperty() {
         return super.date_majProperty();
     }
 
     @Override
-    public LocalDateTime getDate_creation() {
+    public Timestamp getDate_creation() {
         return super.getDate_creation();
     }
 
     @Override
-    public LocalDateTime getDate_maj() {
+    public Timestamp getDate_maj() {
         return super.getDate_maj();
     }
 
@@ -136,12 +136,12 @@ public class LigneTelephonique extends BaseArticle<LigneTelephonique> implements
     }
 
     @Override
-    public void setDate_creation(LocalDateTime date_creation) {
+    public void setDate_creation(Timestamp date_creation) {
         super.setDate_creation(date_creation);
     }
 
     @Override
-    public void setDate_maj(LocalDateTime date_maj) {
+    public void setDate_maj(Timestamp date_maj) {
         super.setDate_maj(date_maj);
     }
 

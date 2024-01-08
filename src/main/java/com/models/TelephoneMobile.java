@@ -1,6 +1,6 @@
 package com.models;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -24,7 +24,7 @@ public class TelephoneMobile extends BaseArticle<TelephoneMobile> implements Tel
     }
 
     public TelephoneMobile(Long id, String libelle, Double prix_vente, int qt_stock, String reference,
-            String marque, String modele, LocalDateTime date_creation, LocalDateTime date_maj) {
+            String marque, String modele, Timestamp date_creation, Timestamp date_maj) {
         super(id, "telephone mobile", libelle, prix_vente, qt_stock, date_creation, date_maj);
         setReference(reference);
         setMarque(marque);
@@ -129,12 +129,12 @@ public class TelephoneMobile extends BaseArticle<TelephoneMobile> implements Tel
     }
 
     @Override
-    public LocalDateTime getDate_creation() {
+    public Timestamp getDate_creation() {
         return super.getDate_creation();
     }
 
     @Override
-    public LocalDateTime getDate_maj() {
+    public Timestamp getDate_maj() {
         return super.getDate_maj();
     }
 
@@ -164,12 +164,12 @@ public class TelephoneMobile extends BaseArticle<TelephoneMobile> implements Tel
     }
 
     @Override
-    public void setDate_creation(LocalDateTime date_creation) {
+    public void setDate_creation(Timestamp date_creation) {
         super.setDate_creation(date_creation);
     }
 
     @Override
-    public void setDate_maj(LocalDateTime date_maj) {
+    public void setDate_maj(Timestamp date_maj) {
         super.setDate_maj(date_maj);
     }
 

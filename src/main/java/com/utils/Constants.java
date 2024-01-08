@@ -47,7 +47,9 @@ public class Constants {
         //
         public static final String DATE_TIME_FORMAT_PATTERN = "yyyy-MM-dd HH:mm:ss";
         public static final String CONFIRMATION_MESSAGE = "Are you sure you want to confirm these changes?";
-        public static final String DELETION_MESSAGE = "Are you sure you want to delete this item?";
+        public static final String DELETION_MESSAGE_CONTENT = "Once you confirm, these items will be permanantely deleted!";
+        public static final String DELETION_MESSAGE_HEADER = "Are you sure you want to delete all %d item(s)?";
+
         public static final String REFRESH_TOOLTIP_MSG = "You can refresh once again after 5 seconds";
         public static final int THROTTLE_DURATION = 5;
 

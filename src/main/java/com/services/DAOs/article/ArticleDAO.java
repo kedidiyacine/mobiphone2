@@ -127,7 +127,6 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
         String sql = String.format(Constants.SELECT_ARTICLES_BY_PAGE_SQL, Constants.ARTICLE_TABLE_NAME, tablename,
                 Constants.ARTICLE_TABLE_NAME, tablename,
                 Constants.ARTICLE_TABLE_NAME);
-        System.out.println(sql);
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setInt(1, items_count);
@@ -318,8 +317,8 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
                     resultSet.getString("reference"),
                     resultSet.getString("marque"),
                     resultSet.getString("modele"),
-                    resultSet.getTimestamp("date_creation").toLocalDateTime(),
-                    resultSet.getTimestamp("date_maj").toLocalDateTime());
+                    resultSet.getTimestamp("date_creation"),
+                    resultSet.getTimestamp("date_maj"));
         } else if ("ligne telephonique".equals(articleType)) {
             return (T) new LigneTelephonique(
                     resultSet.getLong("id"),
@@ -329,8 +328,8 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
                     resultSet.getString("numero"),
                     resultSet.getString("operateur"),
                     resultSet.getDouble("montant_min_consommation"),
-                    resultSet.getTimestamp("date_creation").toLocalDateTime(),
-                    resultSet.getTimestamp("date_maj").toLocalDateTime());
+                    resultSet.getTimestamp("date_creation"),
+                    resultSet.getTimestamp("date_maj"));
 
         }
 

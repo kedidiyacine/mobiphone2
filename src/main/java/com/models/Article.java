@@ -1,6 +1,6 @@
 package com.models;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 public interface Article {
     Long getId();
@@ -23,12 +23,12 @@ public interface Article {
 
     public void setLibelle(String libelle);
 
-    LocalDateTime getDate_creation();
+    Timestamp getDate_creation();
 
-    public void setDate_creation(LocalDateTime date_creation);
+    public void setDate_creation(Timestamp date_creation);
 
-    LocalDateTime getDate_maj();
+    Timestamp getDate_maj();
 
-    public void setDate_maj(LocalDateTime date_maj);
+    public void setDate_maj(Timestamp date_maj);
 
 }

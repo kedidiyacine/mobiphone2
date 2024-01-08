@@ -4,20 +4,16 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.models.Identifiable;
 import com.services.DataService;
 import com.utils.Constants;
-import com.utils.DateUtils;
 import com.utils.ReflectionUtils;
 import com.utils.StringUtils;
 
@@ -25,12 +21,11 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleLongProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ObservableValue;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.util.StringConverter;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -45,10 +40,13 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.Pagination;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.control.Tooltip;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -56,23 +54,33 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 import javafx.util.Duration;
 
+/**
+ * TableController manages a JavaFX TableView for displaying and interacting
+ * with data of a specific type T. It integrates with a DataService for CRUD
+ * operations, provides a set of action buttons, and includes features like
+ * pagination, editing, deleting, refreshing, and creating records.
+ *
+ * @param <T> The type of entities displayed in the TableView, must extend
+ *            Identifiable.
+ * @param <S> The DataService type for CRUD operations on entities of type T.
+ */
 public class TableController<T extends Identifiable<T, ?>, S extends DataService<T>> {
 
     private TableView<T> tableView;
+    private DataService<T> service;
+    private final Class<T> clazz;
     private ActionButtons actionButtons;
     private Button btnSave;
     private Button btnDelete;
     private Button btnRefresh;
     private ObservableList<T> entities = FXCollections.observableArrayList();
-    private DataService<T> service;
     private final Set<String> editableColumns = new HashSet<>();
-    private final Map<Serializable, Map<String, Map<String, String>>> modificationsMap = new HashMap<>();
-    private final Class<T> clazz;
+    private final Map<Serializable, Map<String, Map<String, ?>>> modificationsMap = new HashMap<>();
 
     private Pagination pagination;
-    ReflectionUtils<T> reflectionUtils = new ReflectionUtils<>();
 
     private final int itemsPerPage = Constants.DEFAULT_ITEMS_PER_PAGE;
 
@@ -86,6 +94,17 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
                 btnRefresh.setDisable(false);
             }));
 
+    /**
+     * Constructs a TableController with the specified TableView, entity type,
+     * DataService,
+     * and action buttons for CRUD operations.
+     *
+     * @param tableView     The JavaFX TableView for displaying entities.
+     * @param clazz         The Class type of entities.
+     * @param service       The DataService for CRUD operations on entities.
+     * @param actionButtons ActionButtons containing Save, Delete, Refresh, and
+     *                      Create buttons.
+     */
     public TableController(TableView<T> tableView, Class<T> clazz, S service, ActionButtons actionButtons) {
         this.tableView = tableView;
         this.clazz = clazz;
@@ -108,12 +127,15 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
 
     }
 
-    private List<TableColumn<T, ?>> getColumns() {
-        return tableView.getColumns().stream().collect(Collectors.toList());
+    private ObservableList<TableColumn<T, ?>> getColumns() {
+        return tableView.getColumns();
     }
 
+    /**
+     * Initializes editable columns based on the TableColumn IDs.
+     */
     private void initializeEditableColumns() {
-        List<TableColumn<T, ?>> columns = getColumns();
+        ObservableList<TableColumn<T, ?>> columns = getColumns();
 
         if (!editableColumns.isEmpty())
             editableColumns.clear();
@@ -126,8 +148,11 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         }
     }
 
+    /**
+     * Configures the CellValueFactory for each column based on their IDs.
+     */
     private void instructColumnCellsPopulation() {
-        List<TableColumn<T, ?>> columns = getColumns();
+        ObservableList<TableColumn<T, ?>> columns = getColumns();
 
         for (TableColumn<T, ?> column : columns) {
             if (column.getId() != null && !column.getId().isEmpty()) {
@@ -137,72 +162,94 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         }
     }
 
-    @SuppressWarnings("unchecked")
     private <Col> void configureCellValueFactory(TableColumn<T, Col> column, String propertyName) {
-        column.setCellValueFactory(cellData -> {
-            T entity = cellData.getValue();
-            Object value = reflectionUtils.invokeMethod(entity, "get" +
-                    StringUtils.capitalizeWord(propertyName),
-                    new Class[] {}, new Object[] {});
+        PropertyValueFactory<T, Col> valueFactory = new PropertyValueFactory<>(propertyName);
 
-            if (value instanceof Long) {
-                return (ObservableValue<Col>) new SimpleLongProperty(Long.parseLong(value.toString()));
-            } else if (value instanceof LocalDateTime) {
-                return (ObservableValue<Col>) new SimpleStringProperty(
-                        DateUtils.getFormattedDate((LocalDateTime) value));
-            } else {
-                return (ObservableValue<Col>) new SimpleStringProperty(value.toString());
-            }
-        });
+        column.setCellValueFactory(valueFactory);
     }
 
-    @SuppressWarnings("unchecked")
+    /**
+     * Configures columns to be editable and uses TextFieldTableCell for editing.
+     */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private void makeColumnsEditable() {
-        List<TableColumn<T, ?>> columns = getColumns();
+        ObservableList<TableColumn<T, ?>> columns = getColumns();
 
         for (TableColumn<T, ?> column : columns) {
             if (column.getId() != null && !column.getId().isEmpty() && editableColumns.contains(column.getId())) {
-                ((TableColumn<T, String>) column).setCellFactory(TextFieldTableCell.forTableColumn());
+                StringConverter<?> converter = getDefaultConverter();
+
+                if (converter != null) {
+                    // Use raw type for setCellFactory to avoid type inference issues
+                    column.setCellFactory((Callback) TextFieldTableCell.forTableColumn(converter));
+                }
             }
         }
     }
 
-    @SuppressWarnings("unchecked")
+    private StringConverter<?> getDefaultConverter() {
+        return new StringConverter<Object>() {
+            @Override
+            public String toString(Object object) {
+                return object == null ? "" : object.toString();
+            }
+
+            @Override
+            public Object fromString(String string) {
+                return string;
+            }
+        };
+    }
+
     private void setOnEditCommitHandlersForColumns() {
-        List<TableColumn<T, ?>> columns = getColumns();
+        ObservableList<TableColumn<T, ?>> columns = getColumns();
 
         for (TableColumn<T, ?> column : columns) {
             if (column.getId() != null && !column.getId().isEmpty() && editableColumns.contains(column.getId())) {
                 String propertyName = column.getId();
-                ((TableColumn<T, String>) column).setOnEditCommit(event -> handleEditCommit(event, propertyName));
+                setOnEditCommitHandler(column, propertyName);
             }
         }
     }
 
-    private boolean showBulkDeleteConfirmationModal(int itemCount) {
-        String contentText = "Are you sure you want to delete " + itemCount + " item(s)?";
-        return showConfirmationModal(null, contentText, Constants.DELETION_MESSAGE);
+    /**
+     * Sets the OnEditCommit handler for editable columns.
+     *
+     * @param <Col>        The type of the TableColumn.
+     * @param column       The TableColumn for which to set the handler.
+     * @param propertyName The property name associated with the TableColumn.
+     */
+    private <Col> void setOnEditCommitHandler(TableColumn<T, Col> column, String propertyName) {
+        column.setOnEditCommit(event -> handleEditCommit(event));
     }
 
-    private void revertAndRefreshRow(int rowIndex, Map<String, Map<String, String>> columnModifications) {
+    /**
+     * Shows a confirmation dialog for bulk deletion and initiates the deletion
+     * process.
+     *
+     * @param itemCount The number of items selected for deletion.
+     * @return True if the user confirms the deletion, false otherwise.
+     */
+    private boolean showBulkDeleteConfirmationModal(int itemCount) {
+        String headerText = StringUtils.buildDeletionMessage(itemCount);
+        return showConfirmationModal(null, headerText, Constants.DELETION_MESSAGE_CONTENT);
+    }
+
+    private void revertAndRefreshRow(int rowIndex, Map<String, Map<String, ?>> columnModifications) {
         T originalRow = tableView.getItems().get(rowIndex);
         T revertedRow = revertChanges(columnModifications, originalRow);
         tableView.getItems().set(rowIndex, revertedRow);
     }
 
-    private T revertChanges(Map<String, Map<String, String>> columnModifications, T originalRow) {
+    private T revertChanges(Map<String, Map<String, ?>> columnModifications, T originalRow) {
         T revertedRow = copyProperties(originalRow);
 
-        for (Map.Entry<String, Map<String, String>> columnEntry : columnModifications.entrySet()) {
+        for (Map.Entry<String, Map<String, ?>> columnEntry : columnModifications.entrySet()) {
             String columnName = columnEntry.getKey();
-            String oldValue = columnEntry.getValue().get("old");
 
             try {
-                Class<?> propertyType = reflectionUtils.getPropertyType(clazz, columnName);
-                Object convertedValue = reflectionUtils.convertToCorrectType(oldValue, propertyType);
-
                 // Use the new setPropertyValue method
-                reflectionUtils.setPropertyValue(revertedRow, columnName, convertedValue);
+                ReflectionUtils.setPropertyValue(revertedRow, columnName, columnEntry.getValue().get("old"));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -220,11 +267,11 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
                     String propertyName = column.getId();
 
                     // Use the ReflectionUtils to get and set property values
-                    Object value = reflectionUtils.invokeMethod(source, "get" +
+                    Object value = ReflectionUtils.invokeMethod(source, "get" +
                             StringUtils.capitalizeWord(propertyName),
                             new Class[] {}, new Object[] {});
 
-                    reflectionUtils.setPropertyValue(copy, propertyName, value);
+                    ReflectionUtils.setPropertyValue(copy, propertyName, value);
                 }
             }
 
@@ -244,7 +291,7 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         return -1;
     }
 
-    private boolean showConfirmationModal(Serializable id, String contentText, String headerText) {
+    private boolean showConfirmationModal(Serializable id, String headerText, String contentText) {
 
         Alert confirmationDialog = new Alert(Alert.AlertType.CONFIRMATION);
         confirmationDialog.setTitle("Confirmation");
@@ -259,26 +306,30 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         return result.isPresent() && result.get() == yesButton;
     }
 
-    private <K extends Serializable> void addToModificationsMap(K key, String propertyName, String oldValue,
-            String newValue) {
+    private <K extends Serializable, Col> void addToModificationsMap(K key, String propertyName, Col oldValue,
+            Col newValue) {
         modificationsMap.computeIfAbsent(key, k -> new HashMap<>())
                 .put(propertyName, Map.of("old", oldValue, "new", newValue));
     }
 
-    private void handleEditCommit(TableColumn.CellEditEvent<T, String> event, String propertyName) {
+    /**
+     * Handles the OnEditCommit event when a cell value is edited.
+     *
+     * @param <Col> The type of the TableColumn.
+     * @param event The CellEditEvent containing information about the edit.
+     */
+    private <Col> void handleEditCommit(TableColumn.CellEditEvent<T, Col> event) {
         T entity = event.getRowValue();
-        String oldValue = event.getOldValue();
-        String newValue = event.getNewValue();
+        Col oldValue = event.getOldValue();
+        Col newValue = event.getNewValue();
 
         Serializable entityId = entity.getId();
-        addToModificationsMap(entityId, propertyName, oldValue, newValue);
+        addToModificationsMap(entityId, event.getTableColumn().getId(), oldValue, newValue);
 
         try {
-            Class<?> propertyType = reflectionUtils.getPropertyType(clazz, propertyName);
-
-            // Use ReflectionUtils to set property value
-            reflectionUtils.setPropertyValue(entity, propertyName,
-                    reflectionUtils.convertToCorrectType(newValue, propertyType));
+            String propertyName = event.getTableColumn().getId();
+            // Use TableColumn's getCellData method to get the current value
+            ReflectionUtils.setPropertyValue(entity, propertyName, event.getTableColumn().getCellData(entity));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -289,6 +340,11 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         }
     }
 
+    /**
+     * Handles the Save button action by persisting the pending modifications.
+     *
+     * @param event The ActionEvent triggered by the Save button.
+     */
     @FXML
     public void handleSaveButton(ActionEvent event) {
         if (!btnSave.isDisabled())
@@ -298,19 +354,19 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         }
         String changeMessage;
 
-        for (Map.Entry<Serializable, Map<String, Map<String, String>>> entry : modificationsMap.entrySet()) {
+        for (Map.Entry<Serializable, Map<String, Map<String, ?>>> entry : modificationsMap.entrySet()) {
             Serializable id = entry.getKey();
-            Map<String, Map<String, String>> columnModifications = entry.getValue();
+            Map<String, Map<String, ?>> columnModifications = entry.getValue();
             changeMessage = StringUtils.buildChangeMessage(id, columnModifications);
 
             if (showConfirmationModal(id, changeMessage, Constants.CONFIRMATION_MESSAGE)) {
                 Map<String, Object> updates = new HashMap<>();
 
-                for (Map.Entry<String, Map<String, String>> columnEntry : columnModifications.entrySet()) {
+                for (Map.Entry<String, Map<String, ?>> columnEntry : columnModifications.entrySet()) {
                     String columnName = columnEntry.getKey();
-                    String newValue = columnEntry.getValue().get("new");
+                    // String newValue = columnEntry.getValue().get("new").toString();
 
-                    updates.put(columnName, newValue);
+                    updates.put(columnName, columnEntry.getValue().get("new"));
                 }
 
                 service.modifier((Long) id, updates);
@@ -326,6 +382,12 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         modificationsMap.clear();
     }
 
+    /**
+     * Handles the Delete button action by initiating the deletion process for
+     * selected items.
+     *
+     * @param event The ActionEvent triggered by the Delete button.
+     */
     @FXML
     public void handleDeleteButton(ActionEvent event) {
         TableView.TableViewSelectionModel<T> selectionModel = tableView.getSelectionModel();
@@ -355,21 +417,24 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
 
     private void refreshItems() {
         // Clear the tableView
-        // tableView.getItems().clear();
         tableView.setItems(FXCollections.observableArrayList());
 
-        // Update the entities list using setAll
+        // Update the entities list from the datasource
         entities = FXCollections.observableArrayList(
                 service.getAllByPage(pagination.getCurrentPageIndex() + 1, itemsPerPage));
         // Set a new modifiable ObservableList to the tableView
         tableView.setItems(entities);
 
         // Update the total number of items and recalculate the number of pages
-
         pagination.setPageCount(calculatePageCount());
 
     }
 
+    /**
+     * Handles the Refresh button action by refreshing the displayed data.
+     *
+     * @param event The ActionEvent triggered by the Refresh button.
+     */
     @FXML
     public void handleRefreshButton(ActionEvent event) {
         if (!refreshing.get()) {
@@ -386,6 +451,11 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         }
     }
 
+    /**
+     * Handles the Create button action by opening a modal for creating new records.
+     *
+     * @param event The ActionEvent triggered by the Create button.
+     */
     @FXML
     public void handleCreateButton(ActionEvent event) {
         try {
@@ -461,23 +531,67 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         }
     }
 
+    /**
+     * Builds an entity object from the values entered in the modal's text fields.
+     *
+     * @param content The Parent representing the content of the creation modal.
+     * @return The entity object created from the modal text fields.
+     */
     private T buildEntityFromModalTextFields(Parent content) throws InstantiationException, IllegalAccessException,
             IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException,
             NoSuchFieldException {
         T entity = clazz.getDeclaredConstructor().newInstance();
 
-        for (String column : editableColumns) {
-            TextField textField = (TextField) content.lookup("#" + column);
-            if (textField != null) {
-                String value = textField.getText();
-                Class<?> propertyType = reflectionUtils.getPropertyType(clazz, column);
-                reflectionUtils.setPropertyValue(entity, column,
-                        reflectionUtils.convertToCorrectType(value, propertyType));
+        ObservableList<TableColumn<T, ?>> columns = getColumns();
+
+        for (TableColumn<T, ?> column : columns) {
+            String columnName = column.getId();
+            if (editableColumns.contains(columnName)) {
+                Object cellValue = getCellValueFromCellFactory(content, column);
+                if (cellValue != null) {
+                    ReflectionUtils.setPropertyValue(entity, columnName,
+                            cellValue);
+                }
             }
         }
+
         return entity;
     }
 
+    /**
+     * Gets the cell value from the specified column's cell factory.
+     *
+     * @param <Col>   The type of the TableColumn.
+     * @param content The Parent representing the content of the modal.
+     * @param column  The TableColumn for which to get the cell value.
+     * @return The cell value retrieved from the specified column's cell factory.
+     */
+    @SuppressWarnings("unchecked")
+    private <Col> Col getCellValueFromCellFactory(Parent content, TableColumn<T, Col> column) {
+        Callback<?, ?> cellFactory = column.getCellFactory();
+        if (cellFactory instanceof Callback) {
+            Callback<T, TableCell<T, Col>> cellFactoryCallback = (Callback<T, TableCell<T, Col>>) cellFactory;
+            TableCell<T, Col> tableCell = cellFactoryCallback.call(null);
+            if (tableCell != null) {
+                String textFieldId = column.getId();
+                TextField textField = (TextField) content.lookup("#" + textFieldId);
+
+                if (textField != null) {
+                    // Return the value from the TextField
+                    return (Col) textField.getText();
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Creates an overlay pane to prevent interaction with the main stage during the
+     * modal display.
+     *
+     * @param currentStage The current main stage of the application.
+     * @return The overlay pane created for the modal display.
+     */
     private Pane createOverlayPane(Stage currentStage) {
         Pane overlayPane = new Pane();
         overlayPane.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5);");
@@ -492,37 +606,87 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         return overlayPane;
     }
 
+    /**
+     * Adds modal fields dynamically based on editable columns.
+     *
+     * @param content The Parent representing the content of the creation modal.
+     */
     private void addModalFields(Parent content) {
-        // Assuming editableColumns is a List<String> containing column names
-        for (String column : editableColumns) {
-            Label label = new Label(column);
-            TextField textField = new TextField();
+        ObservableList<TableColumn<T, ?>> columns = getColumns();
 
-            // Assign ID to the TextField based on the column name
-            textField.setId(column);
+        for (TableColumn<T, ?> column : columns) {
+            String columnName = column.getId();
+            if (editableColumns.contains(columnName)) {
+                Label label = new Label(column.getText());
+                TextField textField = new TextField();
+                textField.setId(columnName);
 
-            // Add label and text field to content
-            VBox vbox = (VBox) content.lookup("#dynamicFieldsContainer");
-            if (vbox != null) {
-                HBox hbox = new HBox(label, textField);
-                vbox.getChildren().add(hbox);
+                // Use the StringConverter associated with the TableColumn
+                StringConverter<?> converter = getConverterForColumn(column);
+                if (converter != null) {
+                    // Set the converter for the TextField
+                    textField.setTextFormatter(new TextFormatter<>(converter));
+                }
+
+                VBox vbox = (VBox) content.lookup("#dynamicFieldsContainer");
+                if (vbox != null) {
+                    HBox hbox = new HBox(label, textField);
+                    vbox.getChildren().add(hbox);
+                }
             }
         }
     }
 
+    /**
+     * Gets the StringConverter associated with the specified column.
+     *
+     * @param column The TableColumn for which to get the StringConverter.
+     * @return The StringConverter associated with the specified column.
+     */
+    @SuppressWarnings("unchecked")
+    private StringConverter<?> getConverterForColumn(TableColumn<T, ?> column) {
+        Callback<?, ?> cellFactory = column.getCellFactory();
+        if (cellFactory instanceof Callback) {
+            Callback<T, TextFieldTableCell<T, ?>> textFieldTableCellCallback = (Callback<T, TextFieldTableCell<T, ?>>) cellFactory;
+            TextFieldTableCell<T, ?> textFieldTableCell = textFieldTableCellCallback.call(null);
+            StringConverter<?> converter = textFieldTableCell.getConverter();
+            return converter;
+        }
+        return null;
+    }
+
+    /**
+     * Calculates the total number of pages based on the total item count and items
+     * per page.
+     *
+     * @return The calculated total number of pages.
+     */
     private int calculatePageCount() {
         int totalItems = service.count();
         return (totalItems + itemsPerPage - 1) / itemsPerPage;
     }
 
+    /**
+     * Creates a Node representing a page with entities for the specified page
+     * index.
+     *
+     * @param pageIndex The index of the page to create.
+     * @return The Node representing the specified page.
+     */
     private Node createPage(int pageIndex) {
         entities = FXCollections.observableArrayList(
                 service.getAllByPage(pageIndex, itemsPerPage));
 
         tableView.getItems().setAll(entities);
-        return tableView; // You might need to adjust the container based on your layout
+        return tableView;
     }
 
+    /**
+     * Initializes the TableController by configuring editable columns, instructing
+     * cell population,
+     * making columns editable, setting OnEditCommit handlers, and configuring
+     * pagination.
+     */
     public void initialize() {
         initializeEditableColumns();
         instructColumnCellsPopulation();
@@ -550,11 +714,6 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
             }
         }
 
-        // Populate entities list before hydrating the table view
-        // entities = FXCollections.observableArrayList(
-        // service.getAllByPage(pagination.getCurrentPageIndex(),
-        // Constants.DEFAULT_ITEMS_PER_PAGE));
-
         entities.addListener((ListChangeListener.Change<? extends T> change) -> {
             while (change.next()) {
                 if (change.wasAdded() || change.wasRemoved()) {
@@ -567,7 +726,6 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
             }
         });
 
-        // tableView.getItems().addAll(entities);
         tableView.setEditable(true);
         tableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 

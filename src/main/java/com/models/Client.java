@@ -2,7 +2,7 @@ package com.models;
 
 import javafx.beans.property.*;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 public class Client implements Identifiable<Client, Long> {
     private final LongProperty id = new SimpleLongProperty();
@@ -11,8 +11,8 @@ public class Client implements Identifiable<Client, Long> {
     private final StringProperty prenom = new SimpleStringProperty();
     private final StringProperty adresse_de_livraison = new SimpleStringProperty();
     private final StringProperty email = new SimpleStringProperty();
-    private final ObjectProperty<LocalDateTime> date_creation = new SimpleObjectProperty<>();
-    private final ObjectProperty<LocalDateTime> date_maj = new SimpleObjectProperty<>();
+    private final ObjectProperty<Timestamp> date_creation = new SimpleObjectProperty<>();
+    private final ObjectProperty<Timestamp> date_maj = new SimpleObjectProperty<>();
 
     public Client() {
     }
@@ -27,7 +27,7 @@ public class Client implements Identifiable<Client, Long> {
     }
 
     public Client(Long id, String cin, String nom, String prenom, String adresse_de_livraison, String email,
-            LocalDateTime date_creation, LocalDateTime date_maj) {
+            Timestamp date_creation, Timestamp date_maj) {
 
         this(id, cin, nom, prenom, adresse_de_livraison, email);
         setDate_creation(date_creation);
@@ -68,11 +68,11 @@ public class Client implements Identifiable<Client, Long> {
         return email;
     }
 
-    public ObjectProperty<LocalDateTime> date_creationProperty() {
+    public ObjectProperty<Timestamp> date_creationProperty() {
         return date_creation;
     }
 
-    public ObjectProperty<LocalDateTime> date_majProperty() {
+    public ObjectProperty<Timestamp> date_majProperty() {
         return date_maj;
     }
 
@@ -126,19 +126,19 @@ public class Client implements Identifiable<Client, Long> {
         this.email.set(email);
     }
 
-    public LocalDateTime getDate_creation() {
+    public Timestamp getDate_creation() {
         return date_creation.get();
     }
 
-    public void setDate_creation(LocalDateTime date_creation) {
+    public void setDate_creation(Timestamp date_creation) {
         this.date_creation.set(date_creation);
     }
 
-    public LocalDateTime getDate_maj() {
+    public Timestamp getDate_maj() {
         return date_maj.get();
     }
 
-    public void setDate_maj(LocalDateTime date_maj) {
+    public void setDate_maj(Timestamp date_maj) {
         this.date_maj.set(date_maj);
     }
 
