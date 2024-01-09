@@ -87,4 +87,16 @@ public class Constants {
         public static final String LIGNE_TELEPHONIQUE_TYPE = "ligne telephonique";
         public static final List<String> LIGNE_TELEPHONIQUE_COLUMNS = Arrays.asList("id_article", "numero", "operateur",
                         "montant_min_consommation");
+
+        // carte telephonique
+        public static final String CARTE_TELEPHONIQUE_TABLE_NAME = "carte_telephonique";
+        public static final String CARTE_TELEPHONIQUE_TYPE = "carte telephonique";
+        public static final List<String> CARTE_TELEPHONIQUE_COLUMNS = Arrays.asList("id_article", "code",
+                        "duree_validite", "type_carte", "operateur");
+
+        // cle 3g
+        public static final String CLE_3G_TABLE_NAME = "cle_3g";
+        public static final String CLE_3G_TYPE = "cle 3g";
+        public static final List<String> CLE_3G_COLUMNS = Arrays.asList("id_article", "numero_serie",
+                        "debit_connexion", "capacite_max_telechargement");
 }

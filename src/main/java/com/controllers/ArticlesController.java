@@ -20,6 +20,9 @@ public class ArticlesController implements Initializable {
     private ComboBox<String> cmbArticleType;
 
     private final TelephoneMobileController phoneCtrl = new TelephoneMobileController();
+    private final LigneTelephoniqueController ligneCtrl = new LigneTelephoniqueController();
+    private final CarteTelephoniqueController carteCtrl = new CarteTelephoniqueController();
+    private final Cle3gController cle3gCtrl = new Cle3gController();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -31,7 +34,15 @@ public class ArticlesController implements Initializable {
                         reloadFXML(newSelection, phoneCtrl);
                     }
                     if (newSelection.equals(Constants.LIGNE_TELEPHONIQUE_TYPE)) {
-                        reloadFXML(newSelection, null);
+                        reloadFXML(newSelection, ligneCtrl);
+                    }
+
+                    if (newSelection.equals(Constants.CARTE_TELEPHONIQUE_TYPE)) {
+                        reloadFXML(newSelection, carteCtrl);
+                    }
+
+                    if (newSelection.equals(Constants.CLE_3G_TYPE)) {
+                        reloadFXML(newSelection, cle3gCtrl);
                     }
                 });
 

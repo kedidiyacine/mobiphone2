@@ -32,10 +32,10 @@
                 <TableColumn fx:id="libelle" prefWidth="200.0" text="Libelle" />
                 <TableColumn fx:id="prix_vente" prefWidth="200.0" text="Prix Vente" />
                 <TableColumn fx:id="qt_stock" prefWidth="200.0" text="Qt stock" />
-                <TableColumn fx:id="numero" prefWidth="200.0" text="Numero" />
+                <TableColumn fx:id="code" prefWidth="200.0" text="Code" />
+                <TableColumn fx:id="duree_validite" prefWidth="200.0" text="Duree validite" />
+                <TableColumn fx:id="type_carte" prefWidth="200.0" text="Type" />
                 <TableColumn fx:id="operateur" prefWidth="200.0" text="Operateur" />
-                <TableColumn fx:id="montant_min_consommation" prefWidth="200.0"
-                    text="Montant minimum de consommation" />
                 <TableColumn fx:id="date_creation" prefWidth="200.0" text="Date Creation" />
                 <TableColumn fx:id="date_maj" prefWidth="200.0" text="Date Maj" />
             </columns>

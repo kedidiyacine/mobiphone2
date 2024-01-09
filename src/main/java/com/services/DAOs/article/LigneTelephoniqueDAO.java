@@ -16,18 +16,13 @@ public class LigneTelephoniqueDAO implements LigneTelephoniqueRepertoire {
     }
 
     @Override
-    public LigneTelephonique modifier(Long id, Map<String, Object> updates) {
-        return articleDAO.modifier(id, updates);
-    }
-
-    @Override
-    public LigneTelephonique trouver_par_id(Long id, String tablename) {
-        throw new UnsupportedOperationException("Unimplemented method 'supprimer_par_id'");
-    }
-
-    @Override
     public LigneTelephonique enregistrer(LigneTelephonique telephoneMobile) {
         return articleDAO.enregistrer(telephoneMobile);
+    }
+
+    @Override
+    public LigneTelephonique modifier(Long id, Map<String, Object> updates) {
+        return articleDAO.modifier(id, updates);
     }
 
     @Override
@@ -53,6 +48,11 @@ public class LigneTelephoniqueDAO implements LigneTelephoniqueRepertoire {
     @Override
     public int count() {
         return articleDAO.count(Constants.LIGNE_TELEPHONIQUE_TABLE_NAME);
+    }
+
+    @Override
+    public LigneTelephonique trouver_par_id(Long id, String tablename) {
+        throw new UnsupportedOperationException("Unimplemented method 'supprimer_par_id'");
     }
 
     @Override

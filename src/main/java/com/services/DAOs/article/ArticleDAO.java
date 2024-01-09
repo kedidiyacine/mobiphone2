@@ -14,6 +14,8 @@ import java.util.stream.Collectors;
 import com.utils.Constants;
 import com.utils.StringUtils;
 import com.models.BaseArticle;
+import com.models.CarteTelephonique;
+import com.models.Cle3g;
 import com.models.LigneTelephonique;
 import com.models.TelephoneMobile;
 
@@ -33,6 +35,9 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
         Map<String, List<String>> tableColumnsMap = new HashMap<>();
         tableColumnsMap.put(Constants.TELEPHONE_TABLE_NAME, Constants.TELEPHONE_COLUMNS);
         tableColumnsMap.put(Constants.LIGNE_TELEPHONIQUE_TABLE_NAME, Constants.LIGNE_TELEPHONIQUE_COLUMNS);
+        tableColumnsMap.put(Constants.CARTE_TELEPHONIQUE_TABLE_NAME, Constants.CARTE_TELEPHONIQUE_COLUMNS);
+        tableColumnsMap.put(Constants.CLE_3G_TABLE_NAME, Constants.CLE_3G_COLUMNS);
+
         // Add more types as needed
 
         // Retrieve columns based on the table name
@@ -176,6 +181,14 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
                 updateTable(Constants.LIGNE_TELEPHONIQUE_TABLE_NAME, id,
                         filterUpdatesPerColumns(Constants.LIGNE_TELEPHONIQUE_COLUMNS, updates),
                         Constants.SUB_ARTICLE_PRIMARY_KEY);
+            } else if (Constants.CARTE_TELEPHONIQUE_COLUMNS.stream().anyMatch(updates::containsKey)) {
+                updateTable(Constants.CARTE_TELEPHONIQUE_TABLE_NAME, id,
+                        filterUpdatesPerColumns(Constants.CARTE_TELEPHONIQUE_COLUMNS, updates),
+                        Constants.SUB_ARTICLE_PRIMARY_KEY);
+            } else if (Constants.CLE_3G_COLUMNS.stream().anyMatch(updates::containsKey)) {
+                updateTable(Constants.CLE_3G_TABLE_NAME, id,
+                        filterUpdatesPerColumns(Constants.CLE_3G_COLUMNS, updates),
+                        Constants.SUB_ARTICLE_PRIMARY_KEY);
             }
 
             // Commit the transaction
@@ -296,6 +309,10 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
         // add other types here
         else if (entity.getType().equals(Constants.LIGNE_TELEPHONIQUE_TYPE)) {
             prepareLigneTelephoniqueStatements(preparedStatementType, (LigneTelephonique) entity);
+        } else if (entity.getType().equals(Constants.CARTE_TELEPHONIQUE_TYPE)) {
+            prepareCarteTelephoniqueStatements(preparedStatementType, (CarteTelephonique) entity);
+        } else if (entity.getType().equals(Constants.CLE_3G_TYPE)) {
+            prepareCle3gStatements(preparedStatementType, (Cle3g) entity);
         } else {
             throw new IllegalArgumentException("Unsupported article type: " + entity.getType());
         }
@@ -308,7 +325,7 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
 
         String articleType = resultSet.getString("type");
 
-        if ("telephone mobile".equals(articleType)) {
+        if (Constants.TELEPHONE_MOBILE_TYPE.equals(articleType)) {
             return (T) new TelephoneMobile(
                     resultSet.getLong("id"),
                     resultSet.getString("libelle"),
@@ -319,7 +336,7 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
                     resultSet.getString("modele"),
                     resultSet.getTimestamp("date_creation"),
                     resultSet.getTimestamp("date_maj"));
-        } else if ("ligne telephonique".equals(articleType)) {
+        } else if (Constants.LIGNE_TELEPHONIQUE_TYPE.equals(articleType)) {
             return (T) new LigneTelephonique(
                     resultSet.getLong("id"),
                     resultSet.getString("libelle"),
@@ -331,9 +348,31 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
                     resultSet.getTimestamp("date_creation"),
                     resultSet.getTimestamp("date_maj"));
 
-        }
+        } else if (Constants.CARTE_TELEPHONIQUE_TYPE.equals(articleType)) {
+            return (T) new CarteTelephonique(
+                    resultSet.getLong("id"),
+                    resultSet.getString("libelle"),
+                    resultSet.getDouble("prix_vente"),
+                    resultSet.getInt("qt_stock"),
+                    resultSet.getString("code"),
+                    resultSet.getInt("duree_validite"),
+                    resultSet.getString("type_carte"),
+                    resultSet.getString("operateur"),
+                    resultSet.getTimestamp("date_creation"),
+                    resultSet.getTimestamp("date_maj"));
 
-        else {
+        } else if (Constants.CLE_3G_TYPE.equals(articleType)) {
+            return (T) new Cle3g(
+                    resultSet.getLong("id"),
+                    resultSet.getString("libelle"),
+                    resultSet.getDouble("prix_vente"),
+                    resultSet.getInt("qt_stock"),
+                    resultSet.getString("numero_serie"),
+                    resultSet.getDouble("debit_connexion"),
+                    resultSet.getDouble("capacite_max_telechargement"),
+                    resultSet.getTimestamp("date_creation"),
+                    resultSet.getTimestamp("date_maj"));
+        } else {
             // Handle other types of articles or throw an exception
             throw new IllegalArgumentException("Unsupported article type: " + articleType);
         }
@@ -362,6 +401,23 @@ public class ArticleDAO<T extends BaseArticle<T>> implements ArticleRepertoire<T
         preparedStatement.setString(2, ligne.getNumero());
         preparedStatement.setString(3, ligne.getOperateur());
         preparedStatement.setDouble(4, ligne.getMontant_min_consommation());
+    }
+
+    private void prepareCarteTelephoniqueStatements(PreparedStatement preparedStatement, CarteTelephonique carte)
+            throws SQLException {
+        preparedStatement.setLong(1, carte.getId());
+        preparedStatement.setString(2, carte.getCode());
+        preparedStatement.setInt(3, carte.getDuree_validite());
+        preparedStatement.setString(4, carte.getType_carte());
+        preparedStatement.setString(5, carte.getOperateur());
+    }
+
+    private void prepareCle3gStatements(PreparedStatement preparedStatement, Cle3g cle3g)
+            throws SQLException {
+        preparedStatement.setLong(1, cle3g.getId());
+        preparedStatement.setString(2, cle3g.getNumero_serie());
+        preparedStatement.setDouble(3, cle3g.getDebit_connexion());
+        preparedStatement.setDouble(4, cle3g.getCapacite_max_telechargement());
     }
 
     private void prepareArticleStatementsFromMap(Long id, PreparedStatement preparedStatement,

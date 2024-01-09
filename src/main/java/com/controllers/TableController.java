@@ -14,6 +14,7 @@ import java.util.Set;
 import com.models.Identifiable;
 import com.services.DataService;
 import com.utils.Constants;
+import com.utils.MyStringConverter;
 import com.utils.ReflectionUtils;
 import com.utils.StringUtils;
 
@@ -79,6 +80,7 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
     private ObservableList<T> entities = FXCollections.observableArrayList();
     private final Set<String> editableColumns = new HashSet<>();
     private final Map<Serializable, Map<String, Map<String, ?>>> modificationsMap = new HashMap<>();
+    private final ReflectionUtils reflection = new ReflectionUtils();
 
     private Pagination pagination;
 
@@ -168,16 +170,13 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         column.setCellValueFactory(valueFactory);
     }
 
-    /**
-     * Configures columns to be editable and uses TextFieldTableCell for editing.
-     */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private void makeColumnsEditable() {
         ObservableList<TableColumn<T, ?>> columns = getColumns();
 
         for (TableColumn<T, ?> column : columns) {
             if (column.getId() != null && !column.getId().isEmpty() && editableColumns.contains(column.getId())) {
-                StringConverter<?> converter = getDefaultConverter();
+                MyStringConverter<?> converter = new MyStringConverter<>(column);
                 if (converter != null) {
                     setCellFactoryForColumn(column, (StringConverter) converter);
                 }
@@ -185,22 +184,11 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         }
     }
 
+    /**
+     * Configures columns to be editable and uses TextFieldTableCell for editing.
+     */
     private <Col> void setCellFactoryForColumn(TableColumn<T, Col> column, StringConverter<Col> converter) {
         column.setCellFactory(TextFieldTableCell.forTableColumn(converter));
-    }
-
-    private StringConverter<?> getDefaultConverter() {
-        return new StringConverter<Object>() {
-            @Override
-            public String toString(Object object) {
-                return object == null ? "" : object.toString();
-            }
-
-            @Override
-            public Object fromString(String string) {
-                return string;
-            }
-        };
     }
 
     private void setOnEditCommitHandlersForColumns() {
@@ -251,7 +239,7 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
 
             try {
                 // Use the new setPropertyValue method
-                ReflectionUtils.setPropertyValue(revertedRow, columnName, columnEntry.getValue().get("old"));
+                reflection.setPropertyValue(revertedRow, columnName, columnEntry.getValue().get("old"));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -269,11 +257,11 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
                     String propertyName = column.getId();
 
                     // Use the ReflectionUtils to get and set property values
-                    Object value = ReflectionUtils.invokeMethod(source, "get" +
+                    Object value = reflection.invokeMethod(source, "get" +
                             StringUtils.capitalizeWord(propertyName),
                             new Class[] {}, new Object[] {});
 
-                    ReflectionUtils.setPropertyValue(copy, propertyName, value);
+                    reflection.setPropertyValue(copy, propertyName, value);
                 }
             }
 
@@ -331,7 +319,7 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         try {
             String propertyName = event.getTableColumn().getId();
             // Use TableColumn's getCellData method to get the current value
-            ReflectionUtils.setPropertyValue(entity, propertyName, event.getTableColumn().getCellData(entity));
+            reflection.setPropertyValue(entity, propertyName, event.getTableColumn().getCellData(entity));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -366,7 +354,6 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
 
                 for (Map.Entry<String, Map<String, ?>> columnEntry : columnModifications.entrySet()) {
                     String columnName = columnEntry.getKey();
-                    // String newValue = columnEntry.getValue().get("new").toString();
 
                     updates.put(columnName, columnEntry.getValue().get("new"));
                 }
@@ -480,7 +467,7 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
 
             // Create a new stage for the modal
             Stage modalStage = new Stage();
-            modalStage.initModality(Modality.APPLICATION_MODAL);
+            modalStage.initModality(Modality.WINDOW_MODAL);
             modalStage.initOwner(currentStage);
             String TITLE = "Create " + clazz.getSimpleName();
             modalStage.setTitle(TITLE);
@@ -550,8 +537,9 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
             String columnName = column.getId();
             if (editableColumns.contains(columnName)) {
                 Object cellValue = getCellValueFromCellFactory(content, column);
+
                 if (cellValue != null) {
-                    ReflectionUtils.setPropertyValue(entity, columnName,
+                    reflection.setPropertyValue(entity, columnName,
                             cellValue);
                 }
             }
@@ -571,16 +559,25 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
     @SuppressWarnings("unchecked")
     private <Col> Col getCellValueFromCellFactory(Parent content, TableColumn<T, Col> column) {
         Callback<?, ?> cellFactory = column.getCellFactory();
+
         if (cellFactory instanceof Callback) {
             Callback<T, TableCell<T, Col>> cellFactoryCallback = (Callback<T, TableCell<T, Col>>) cellFactory;
+
+            // Create a temporary TableCell to retrieve the StringConverter
             TableCell<T, Col> tableCell = cellFactoryCallback.call(null);
+
             if (tableCell != null) {
                 String textFieldId = column.getId();
                 TextField textField = (TextField) content.lookup("#" + textFieldId);
 
                 if (textField != null) {
-                    // Return the value from the TextField
-                    return (Col) textField.getText();
+                    // Use the StringConverter associated with the TableColumn
+                    StringConverter<Col> converter = getConverterForColumn(column);
+
+                    if (converter != null) {
+                        // Convert the text from the TextField to the appropriate type
+                        return converter.fromString(textField.getText());
+                    }
                 }
             }
         }
@@ -625,6 +622,7 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
 
                 // Use the StringConverter associated with the TableColumn
                 StringConverter<?> converter = getConverterForColumn(column);
+
                 if (converter != null) {
                     // Set the converter for the TextField
                     textField.setTextFormatter(new TextFormatter<>(converter));
@@ -639,22 +637,25 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         }
     }
 
-    /**
-     * Gets the StringConverter associated with the specified column.
-     *
-     * @param column The TableColumn for which to get the StringConverter.
-     * @return The StringConverter associated with the specified column.
-     */
-    @SuppressWarnings("unchecked")
-    private StringConverter<?> getConverterForColumn(TableColumn<T, ?> column) {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private <Col> StringConverter<Col> getConverterForColumn(TableColumn<T, ?> column) {
         Callback<?, ?> cellFactory = column.getCellFactory();
         if (cellFactory instanceof Callback) {
-            Callback<T, TextFieldTableCell<T, ?>> textFieldTableCellCallback = (Callback<T, TextFieldTableCell<T, ?>>) cellFactory;
-            TextFieldTableCell<T, ?> textFieldTableCell = textFieldTableCellCallback.call(null);
-            StringConverter<?> converter = textFieldTableCell.getConverter();
-            return converter;
+            Callback<T, TableCell<T, Col>> cellFactoryCallback = (Callback<T, TableCell<T, Col>>) cellFactory;
+
+            // Check if the cellFactoryCallback is null
+            if (cellFactoryCallback != null) {
+                // Create a temporary TableCell to retrieve the StringConverter
+                TableCell<T, Col> tableCell = cellFactoryCallback.call(null);
+
+                if (tableCell != null) {
+                    return ((TextFieldTableCell) tableCell).getConverter();
+                }
+            }
         }
-        return null;
+
+        // If cellFactory or cellFactoryCallback is null, use MyStringConverter directly
+        return new MyStringConverter<>((TableColumn<T, Col>) column);
     }
 
     /**
@@ -719,11 +720,7 @@ public class TableController<T extends Identifiable<T, ?>, S extends DataService
         entities.addListener((ListChangeListener.Change<? extends T> change) -> {
             while (change.next()) {
                 if (change.wasAdded() || change.wasRemoved()) {
-                    // Check if the size is below 10
-                    if (entities.size() < Constants.DEFAULT_ITEMS_PER_PAGE) {
-                        // Call refreshItems
-                        refreshItems();
-                    }
+                    refreshItems();
                 }
             }
         });

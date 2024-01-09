@@ -1,73 +1,88 @@
 package com.models;
 
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+
+import javafx.beans.property.StringProperty;
 
 import java.sql.Timestamp;
 
 import com.utils.Constants;
 
-import javafx.beans.property.StringProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
 
-public class LigneTelephonique extends BaseArticle<LigneTelephonique> implements LigneTelephoniqueArticle {
+public class CarteTelephonique extends BaseArticle<CarteTelephonique> implements CarteTelephoniqueArticle {
 
-    private final StringProperty numero = new SimpleStringProperty();
+    private final StringProperty code = new SimpleStringProperty();
+    private final IntegerProperty duree_validite = new SimpleIntegerProperty();
+    private final StringProperty type_carte = new SimpleStringProperty();
     private final StringProperty operateur = new SimpleStringProperty();
-    private final DoubleProperty montant_min_consommation = new SimpleDoubleProperty();
 
-    public LigneTelephonique() {
-        setType(Constants.LIGNE_TELEPHONIQUE_TYPE);
+    public CarteTelephonique() {
+        setType(Constants.CARTE_TELEPHONIQUE_TYPE);
     }
 
-    public LigneTelephonique(Long id, String libelle, Double prix_vente,
-            Integer qt_stock, String numero, String operateur, Double montant_min_consommation,
+    public CarteTelephonique(Long id, String libelle, Double prix_vente,
+            Integer qt_stock, String code, Integer duree_validite, String type_carte, String operateur,
             Timestamp date_creation, Timestamp date_maj) {
-        super(id, Constants.LIGNE_TELEPHONIQUE_TYPE, libelle, prix_vente, qt_stock, date_creation, date_maj);
-        setNumero(numero);
+        super(id, Constants.CARTE_TELEPHONIQUE_TYPE, libelle, prix_vente, qt_stock, date_creation, date_maj);
+        setCode(code);
+        setDate_creation(date_creation);
+        setType_carte(type_carte);
         setOperateur(operateur);
-        setMontant_min_consommation(montant_min_consommation);
     }
 
     // JAVAFX Getter and Setters
 
-    public StringProperty numeroProperty() {
-        return numero;
+    public StringProperty codeProperty() {
+        return code;
+    }
+
+    public IntegerProperty duree_validiteProperty() {
+        return duree_validite;
+    }
+
+    public StringProperty type_carteProperty() {
+        return type_carte;
     }
 
     public StringProperty operateurProperty() {
         return operateur;
     }
 
-    public DoubleProperty montant_min_consommationProperty() {
-        return montant_min_consommation;
+    public String getCode() {
+        return code.get();
     }
 
-    public String getNumero() {
-        return numero.get();
+    public Integer getDuree_validite() {
+        return duree_validite.get();
+    }
+
+    public String getType_carte() {
+        return type_carte.get();
     }
 
     public String getOperateur() {
         return operateur.get();
     }
 
-    public Double getMontant_min_consommation() {
-        return montant_min_consommation.get();
+    public void setCode(String code) {
+        this.code.set(code);
     }
 
-    public void setNumero(String numero) {
-        this.numero.set(numero);
+    public void setDuree_validite(Integer duree_validite) {
+        this.duree_validite.set(duree_validite);
+    }
+
+    public void setType_carte(String type_carte) {
+        this.type_carte.set(type_carte);
     }
 
     public void setOperateur(String operateur) {
         this.operateur.set(operateur);
-    }
-
-    public void setMontant_min_consommation(Double montant_min_consommation) {
-        this.montant_min_consommation.set(montant_min_consommation);
     }
 
     // Getter and Setters

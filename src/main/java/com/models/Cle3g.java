@@ -1,76 +1,73 @@
 package com.models;
 
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-
 import java.sql.Timestamp;
 
 import com.utils.Constants;
 
-import javafx.beans.property.StringProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 
-public class LigneTelephonique extends BaseArticle<LigneTelephonique> implements LigneTelephoniqueArticle {
+public class Cle3g extends BaseArticle<Cle3g> implements Cle3gArticle {
 
-    private final StringProperty numero = new SimpleStringProperty();
-    private final StringProperty operateur = new SimpleStringProperty();
-    private final DoubleProperty montant_min_consommation = new SimpleDoubleProperty();
+    private final StringProperty numero_serie = new SimpleStringProperty();
+    private final DoubleProperty debit_connexion = new SimpleDoubleProperty();
+    private final DoubleProperty capacite_max_telechargement = new SimpleDoubleProperty();
 
-    public LigneTelephonique() {
-        setType(Constants.LIGNE_TELEPHONIQUE_TYPE);
+    public Cle3g() {
+        setType(Constants.CLE_3G_TYPE);
     }
 
-    public LigneTelephonique(Long id, String libelle, Double prix_vente,
-            Integer qt_stock, String numero, String operateur, Double montant_min_consommation,
+    public Cle3g(Long id, String libelle, Double prix_vente,
+            Integer qt_stock, String numero_serie, Double debit_connexion, Double capacite_max_telechargement,
             Timestamp date_creation, Timestamp date_maj) {
-        super(id, Constants.LIGNE_TELEPHONIQUE_TYPE, libelle, prix_vente, qt_stock, date_creation, date_maj);
-        setNumero(numero);
-        setOperateur(operateur);
-        setMontant_min_consommation(montant_min_consommation);
+        super(id, Constants.CLE_3G_TYPE, libelle, prix_vente, qt_stock, date_creation, date_maj);
+        setNumero_serie(numero_serie);
+        setDebit_connexion(debit_connexion);
+        setCapacite_max_telechargement(capacite_max_telechargement);
     }
 
     // JAVAFX Getter and Setters
 
-    public StringProperty numeroProperty() {
-        return numero;
+    public StringProperty numero_serieProperty() {
+        return numero_serie;
     }
 
-    public StringProperty operateurProperty() {
-        return operateur;
+    public DoubleProperty debit_connexionProperty() {
+        return debit_connexion;
     }
 
-    public DoubleProperty montant_min_consommationProperty() {
-        return montant_min_consommation;
+    public DoubleProperty capacite_max_telechargementProperty() {
+        return capacite_max_telechargement;
     }
 
-    public String getNumero() {
-        return numero.get();
+    public String getNumero_serie() {
+        return numero_serie.get();
     }
 
-    public String getOperateur() {
-        return operateur.get();
+    public Double getDebit_connexion() {
+        return debit_connexion.get();
     }
 
-    public Double getMontant_min_consommation() {
-        return montant_min_consommation.get();
+    public Double getCapacite_max_telechargement() {
+        return capacite_max_telechargement.get();
     }
 
-    public void setNumero(String numero) {
-        this.numero.set(numero);
+    public void setNumero_serie(String numero_serie) {
+        this.numero_serie.set(numero_serie);
     }
 
-    public void setOperateur(String operateur) {
-        this.operateur.set(operateur);
+    public void setDebit_connexion(Double debit_connexion) {
+        this.debit_connexion.set(debit_connexion);
     }
 
-    public void setMontant_min_consommation(Double montant_min_consommation) {
-        this.montant_min_consommation.set(montant_min_consommation);
+    public void setCapacite_max_telechargement(Double capacite_max_telechargement) {
+        this.capacite_max_telechargement.set(capacite_max_telechargement);
     }
-
-    // Getter and Setters
 
     @Override
     public ObjectProperty<Timestamp> date_creationProperty() {
@@ -176,5 +173,7 @@ public class LigneTelephonique extends BaseArticle<LigneTelephonique> implements
     public StringProperty typeProperty() {
         return super.typeProperty();
     }
+
+    // Getter and Setters
 
 }
